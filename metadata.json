@@ -1,0 +1,6 @@
+{
+  "name": "Servicios Vecinales",
+  "description": "Aplicación PWA que conecta clientes con proveedores, solicitudes de servicio y reseñas verificadas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["FIREBASE_AUTH", "FIRESTORE", "PWA", "CAPACITOR_ANDROID"]
+}

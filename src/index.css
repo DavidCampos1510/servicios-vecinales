@@ -1,0 +1,407 @@
+@import "tailwindcss";
+
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #18324a;
+  background: #eaf2ee;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --sv-green: #16a765;
+  --sv-green-strong: #0f9256;
+  --sv-green-soft: #eaf8f0;
+  --sv-navy: #143453;
+  --sv-text: #24425c;
+  --sv-muted: #72839a;
+  --sv-bg: #f6f9f7;
+  --sv-card: #ffffff;
+  --sv-line: #e4ece8;
+  --sv-shadow: 0 12px 34px rgba(31, 74, 56, 0.09);
+  --sv-shadow-soft: 0 6px 20px rgba(31, 74, 56, 0.06);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 10% 10%, rgba(22, 167, 101, 0.08), transparent 30%),
+    linear-gradient(180deg, #eef5f1 0%, #e6eeea 100%);
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+input,
+textarea,
+select {
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: rgba(22, 167, 101, 0.52) !important;
+  box-shadow: 0 0 0 3px rgba(22, 167, 101, 0.10);
+}
+
+/*
+ * Contenedor usado únicamente por Capacitor (Android/iOS).
+ * En una app nativa la WebView ocupa toda la pantalla y no debe dibujarse
+ * un marco adicional.
+ */
+.native-app-shell {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100vh;
+  overflow: hidden;
+  background: var(--sv-bg);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+}
+
+.native-app-shell > * {
+  width: 100%;
+  height: 100%;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* =========================================================
+   SERVICIOS VECINALES · PARCHE 21 UX/UI
+   Capa exclusivamente visual. No modifica lógica ni datos.
+   ========================================================= */
+
+.sv-screen {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(22, 167, 101, 0.05), transparent 28%),
+    var(--sv-bg) !important;
+  color: var(--sv-text);
+}
+
+.sv-header {
+  min-height: 68px !important;
+  height: auto !important;
+  padding: 13px 18px !important;
+  background:
+    radial-gradient(circle at 88% 22%, rgba(255, 255, 255, 0.15), transparent 27%),
+    linear-gradient(135deg, #18ae69 0%, #10925a 52%, #0c7f4f 100%) !important;
+  box-shadow: 0 10px 28px rgba(12, 111, 69, 0.18) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.13);
+}
+
+
+.sv-admin-header {
+  background:
+    radial-gradient(circle at 88% 18%, rgba(255,255,255,.12), transparent 26%),
+    linear-gradient(135deg, #173a51 0%, #123349 50%, #0e8c58 145%) !important;
+  box-shadow: 0 10px 28px rgba(16, 48, 67, 0.18) !important;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.sv-header-title {
+  font-size: 16px !important;
+  line-height: 1.1 !important;
+  font-weight: 850 !important;
+  letter-spacing: -0.025em;
+}
+
+.sv-header-subtitle {
+  color: rgba(255, 255, 255, 0.80) !important;
+  font-size: 10px !important;
+  margin-top: 3px;
+}
+
+.sv-panel,
+.sv-card {
+  background: var(--sv-card) !important;
+  border: 1px solid var(--sv-line) !important;
+  box-shadow: var(--sv-shadow-soft) !important;
+}
+
+.sv-panel {
+  border-radius: 24px !important;
+}
+
+.sv-card {
+  border-radius: 20px !important;
+}
+
+.sv-search-panel {
+  border-radius: 26px !important;
+  padding: 14px !important;
+  box-shadow: var(--sv-shadow) !important;
+  border: 1px solid rgba(225, 235, 230, 0.96) !important;
+}
+
+.sv-search-panel input,
+.sv-search-panel select,
+.sv-form-field {
+  min-height: 42px;
+  background: #fbfdfc !important;
+  border-color: #dfe8e4 !important;
+  color: var(--sv-navy) !important;
+}
+
+.sv-section-title {
+  color: var(--sv-navy) !important;
+  font-size: 12px !important;
+  letter-spacing: 0.035em !important;
+  font-weight: 850 !important;
+}
+
+.sv-pill {
+  border-radius: 999px !important;
+  transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.sv-pill:active {
+  transform: scale(0.98);
+}
+
+.sv-primary {
+  background: linear-gradient(135deg, #18aa67 0%, #109758 100%) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+  box-shadow: 0 8px 18px rgba(16, 151, 88, 0.19) !important;
+}
+
+.sv-primary:hover {
+  filter: brightness(0.98);
+}
+
+.sv-primary:disabled {
+  box-shadow: none !important;
+}
+
+.sv-secondary {
+  background: #f5f8f6 !important;
+  color: #52657b !important;
+  border-color: #e2eae6 !important;
+}
+
+.sv-provider-card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #ffffff 0%, #fdfefd 100%) !important;
+  border: 1px solid #e3ece7 !important;
+  border-radius: 22px !important;
+  box-shadow: 0 12px 30px rgba(34, 72, 55, 0.08) !important;
+}
+
+.sv-provider-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #16a765, #8bd3ac);
+  opacity: 0.9;
+}
+
+.sv-provider-avatar {
+  border-radius: 18px !important;
+  box-shadow: 0 5px 18px rgba(22, 49, 70, 0.10);
+}
+
+.sv-bottom-nav {
+  height: 70px !important;
+  padding: 5px 12px calc(5px + env(safe-area-inset-bottom, 0px)) !important;
+  background: rgba(255, 255, 255, 0.97) !important;
+  backdrop-filter: blur(16px);
+  border-top: 1px solid #e5ece8 !important;
+  box-shadow: 0 -8px 28px rgba(35, 70, 53, 0.08) !important;
+}
+
+.sv-bottom-nav button {
+  min-height: 52px;
+  border-radius: 16px;
+}
+
+.sv-bottom-nav button[data-active="true"] {
+  background: #eff9f3;
+}
+
+.sv-profile-hero {
+  overflow: hidden;
+  position: relative;
+  border-radius: 24px !important;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdfc 100%) !important;
+  border: 1px solid #e2ece6 !important;
+  box-shadow: var(--sv-shadow) !important;
+}
+
+.sv-profile-hero::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 72px;
+  background:
+    radial-gradient(circle at 82% 32%, rgba(255,255,255,.18), transparent 28%),
+    linear-gradient(135deg, #20b46e, #0f8d55);
+}
+
+.sv-auth-shell {
+  background:
+    radial-gradient(circle at 10% 0%, rgba(22, 167, 101, 0.12), transparent 34%),
+    linear-gradient(180deg, #f7fbf8 0%, #f1f6f3 100%) !important;
+}
+
+.sv-auth-card {
+  border: 1px solid #e2ebe6 !important;
+  border-radius: 28px !important;
+  box-shadow: 0 18px 42px rgba(31, 70, 53, 0.10) !important;
+}
+
+.sv-auth-card label {
+  color: #4d6176 !important;
+}
+
+.sv-auth-card input,
+.sv-auth-card select,
+.sv-auth-card textarea {
+  min-height: 43px;
+  border-color: #dee8e3 !important;
+  background: #fbfdfc !important;
+}
+
+.sv-stat-card {
+  border-radius: 18px !important;
+  border-width: 1px !important;
+  box-shadow: 0 6px 16px rgba(34, 72, 55, 0.04);
+}
+
+.sv-tabs {
+  background: #ffffff !important;
+  border-color: #e2ebe6 !important;
+  border-radius: 18px !important;
+  box-shadow: 0 5px 16px rgba(35, 72, 54, 0.05) !important;
+}
+
+.sv-tabs button {
+  border-radius: 13px !important;
+}
+
+.sv-notification-card {
+  border-radius: 20px !important;
+  box-shadow: 0 7px 20px rgba(35, 72, 54, 0.05) !important;
+}
+
+.sv-empty-state {
+  border-radius: 24px !important;
+  background: linear-gradient(180deg, #ffffff, #fbfdfc) !important;
+  border-color: #dfe9e4 !important;
+}
+
+.sv-modal {
+  border-radius: 26px !important;
+  border: 1px solid #e1eae5 !important;
+  box-shadow: 0 24px 70px rgba(18, 47, 35, 0.24) !important;
+}
+
+.sv-chip-active {
+  background: linear-gradient(135deg, #1bb06b, #0e9457) !important;
+  border-color: transparent !important;
+  color: white !important;
+  box-shadow: 0 5px 14px rgba(16, 150, 88, 0.17);
+}
+
+.sv-chip-inactive {
+  background: #ffffff !important;
+  color: #52677b !important;
+  border-color: #dde7e2 !important;
+}
+
+.sv-soft-green {
+  background: #edf9f2 !important;
+  border-color: #d7efe1 !important;
+  color: #0d8550 !important;
+}
+
+.sv-dark-action {
+  background: #15314c !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: 0 7px 18px rgba(20, 49, 76, 0.16) !important;
+}
+
+/* Unifica visualmente tarjetas ya existentes sin alterar su estructura. */
+.sv-screen .bg-white.rounded-2xl,
+.sv-screen .bg-white.rounded-3xl {
+  border-color: #e4ece8;
+}
+
+.sv-screen .shadow-sm {
+  box-shadow: 0 6px 18px rgba(35, 72, 54, 0.05);
+}
+
+.sv-screen .text-slate-800,
+.sv-screen .text-slate-900 {
+  color: var(--sv-navy);
+}
+
+.sv-screen .text-slate-400 {
+  color: #8290a2;
+}
+
+.sv-screen .text-slate-500 {
+  color: #65778c;
+}
+
+@media (max-width: 360px) {
+  .sv-header {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+  .sv-search-panel {
+    padding: 12px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

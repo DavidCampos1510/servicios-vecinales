@@ -1,0 +1,1378 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function userDocument() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid));
+    }
+
+    function hasRole(role) {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid))
+        && userDocument().data.tipo_usuario == role;
+    }
+
+    function hasRoleAfter(role) {
+      return isSignedIn()
+        && getAfter(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.tipo_usuario == role;
+    }
+
+    function isAdmin() {
+      return hasRole('admin');
+    }
+
+    function isValidId(id) {
+      return id is string
+        && id.size() > 0
+        && id.size() <= 128
+        && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidUsuario(data) {
+      return data.keys().hasAll(['id', 'nombre', 'email', 'telefono', 'tipo_usuario'])
+        && data.keys().hasOnly([
+          'id', 'nombre', 'email', 'telefono', 'tipo_usuario', 'estado_cuenta',
+          'pais_codigo', 'pais_nombre', 'region_codigo', 'region_nombre', 'localidad_nombre',
+          'moneda_codigo', 'prefijo_telefonico',
+          'moderacion_motivo', 'moderacion_actualizada_at', 'reactivacion_pendiente', 'reactivada_at',
+          'politicas_aceptadas', 'jurisdiccion_politicas', 'politicas_version', 'politicas_aceptadas_at',
+          'terminos_aceptados', 'terminos_version', 'terminos_aceptados_at',
+          'privacidad_informada', 'privacidad_version', 'privacidad_informada_at',
+          'mayor_18_declarado', 'mayor_18_declarado_at', 'createdAt'
+        ])
+        && isValidId(data.id)
+        && data.nombre is string && data.nombre.size() >= 2 && data.nombre.size() <= 100
+        && data.email is string && data.email.size() >= 5 && data.email.size() <= 150
+        && data.telefono is string && data.telefono.size() >= 8 && data.telefono.size() <= 20
+        && data.tipo_usuario in ['cliente', 'proveedor', 'admin']
+        && (!data.keys().hasAny(['pais_codigo']) || data.pais_codigo in ['CL', 'AR', 'MX', 'CO', 'PE'])
+        && (!data.keys().hasAny(['pais_nombre']) || (data.pais_nombre is string && data.pais_nombre.size() >= 3 && data.pais_nombre.size() <= 40))
+        && (!data.keys().hasAny(['region_codigo']) || (data.region_codigo is string && data.region_codigo.size() >= 2 && data.region_codigo.size() <= 20))
+        && (!data.keys().hasAny(['region_nombre']) || (data.region_nombre is string && data.region_nombre.size() >= 2 && data.region_nombre.size() <= 100))
+        && (!data.keys().hasAny(['localidad_nombre']) || (data.localidad_nombre is string && data.localidad_nombre.size() >= 2 && data.localidad_nombre.size() <= 100))
+        && (!data.keys().hasAny(['moneda_codigo']) || data.moneda_codigo in ['CLP', 'ARS', 'MXN', 'COP', 'PEN'])
+        && (!data.keys().hasAny(['prefijo_telefonico']) || (data.prefijo_telefonico is string && data.prefijo_telefonico.size() >= 2 && data.prefijo_telefonico.size() <= 5))
+        && (!data.keys().hasAny(['estado_cuenta']) || data.estado_cuenta in ['activa', 'suspendida', 'eliminada'])
+        && (!data.keys().hasAny(['moderacion_motivo']) || (
+          data.moderacion_motivo is string && data.moderacion_motivo.size() <= 300
+        ))
+        && (!data.keys().hasAny(['moderacion_actualizada_at']) || data.moderacion_actualizada_at is timestamp)
+        && (!data.keys().hasAny(['reactivacion_pendiente']) || data.reactivacion_pendiente is bool)
+        && (!data.keys().hasAny(['reactivada_at']) || data.reactivada_at is timestamp)
+        && (!data.keys().hasAny(['politicas_aceptadas']) || data.politicas_aceptadas is bool)
+        && (!data.keys().hasAny(['jurisdiccion_politicas']) || data.jurisdiccion_politicas in ['CL', 'AR', 'MX', 'CO', 'PE'])
+        && (!data.keys().hasAny(['politicas_version']) || (
+          data.politicas_version is string && data.politicas_version.size() >= 1 && data.politicas_version.size() <= 30
+        ))
+        && (!data.keys().hasAny(['politicas_aceptadas_at']) || data.politicas_aceptadas_at is timestamp)
+        && (!data.keys().hasAny(['terminos_aceptados']) || data.terminos_aceptados is bool)
+        && (!data.keys().hasAny(['terminos_version']) || (data.terminos_version is string && data.terminos_version.size() >= 1 && data.terminos_version.size() <= 30))
+        && (!data.keys().hasAny(['terminos_aceptados_at']) || data.terminos_aceptados_at is timestamp)
+        && (!data.keys().hasAny(['privacidad_informada']) || data.privacidad_informada is bool)
+        && (!data.keys().hasAny(['privacidad_version']) || (data.privacidad_version is string && data.privacidad_version.size() >= 1 && data.privacidad_version.size() <= 30))
+        && (!data.keys().hasAny(['privacidad_informada_at']) || data.privacidad_informada_at is timestamp)
+        && (!data.keys().hasAny(['mayor_18_declarado']) || data.mayor_18_declarado is bool)
+        && (!data.keys().hasAny(['mayor_18_declarado_at']) || data.mayor_18_declarado_at is timestamp)
+        && (!data.keys().hasAny(['createdAt']) || data.createdAt is timestamp);
+    }
+
+    function isValidCategoria(value) {
+      return value is string
+        && value in [
+          'electricidad', 'gasfiteria', 'cerrajeria', 'carpinteria', 'pintura',
+          'construccion', 'climatizacion', 'limpieza', 'jardineria', 'informatica',
+          'desarrollo_web', 'electrodomesticos', 'mecanica', 'fletes', 'mascotas',
+          'belleza', 'clases_particulares', 'fotografia_eventos', 'costura', 'otros'
+        ];
+    }
+
+    function isValidAgendaDay(day) {
+      return day is map
+        && day.keys().hasAll(['activo', 'desde', 'hasta'])
+        && day.keys().hasOnly(['activo', 'desde', 'hasta'])
+        && day.activo is bool
+        && day.desde is string && day.desde.size() <= 5
+        && day.hasta is string && day.hasta.size() <= 5
+        && (
+          day.activo == false
+          || (
+            day.desde.matches('^[0-9]{2}:[0-9]{2}$')
+            && day.hasta.matches('^[0-9]{2}:[0-9]{2}$')
+          )
+        );
+    }
+
+    function isValidAgendaSemanal(agenda) {
+      return agenda is map
+        && agenda.keys().hasAll(['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'])
+        && agenda.keys().hasOnly(['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'])
+        && isValidAgendaDay(agenda.lunes)
+        && isValidAgendaDay(agenda.martes)
+        && isValidAgendaDay(agenda.miercoles)
+        && isValidAgendaDay(agenda.jueves)
+        && isValidAgendaDay(agenda.viernes)
+        && isValidAgendaDay(agenda.sabado)
+        && isValidAgendaDay(agenda.domingo);
+    }
+
+    // Validación de agenda usada únicamente cuando el dueño actualiza sus horarios.
+    // Es intencionalmente compatible con perfiles antiguos: valida la estructura
+    // que escribe la app, sin volver a validar todos los campos históricos del perfil.
+    function isEditableAgendaDay(day) {
+      return day is map
+        && day.keys().hasAll(['activo', 'desde', 'hasta'])
+        && day.activo is bool
+        && day.desde is string && day.desde.size() <= 5
+        && day.hasta is string && day.hasta.size() <= 5;
+    }
+
+    function isEditableAgendaSemanal(agenda) {
+      return agenda is map
+        && agenda.keys().hasAll(['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'])
+        && isEditableAgendaDay(agenda.lunes)
+        && isEditableAgendaDay(agenda.martes)
+        && isEditableAgendaDay(agenda.miercoles)
+        && isEditableAgendaDay(agenda.jueves)
+        && isEditableAgendaDay(agenda.viernes)
+        && isEditableAgendaDay(agenda.sabado)
+        && isEditableAgendaDay(agenda.domingo);
+    }
+
+    function isValidProveedor(data) {
+      return data.keys().hasAll([
+          'id', 'usuario_id', 'oficio', 'experiencia', 'descripcion', 'ubicacion',
+          'foto_perfil', 'whatsapp', 'calificacion_promedio'
+        ])
+        && data.keys().hasOnly([
+          'id', 'usuario_id', 'nombre_publico', 'categoria_id', 'categorias', 'oficio', 'experiencia', 'descripcion',
+          'ubicacion', 'pais_codigo', 'pais_nombre', 'region_codigo', 'region_nombre', 'localidad_nombre',
+          'moneda_codigo', 'prefijo_telefonico', 'foto_perfil', 'whatsapp', 'calificacion_promedio',
+          'cantidad_resenas', 'verificado', 'fotos_trabajos', 'disponibilidad', 'horario_atencion', 'agenda_semanal',
+          'estado_verificacion', 'verificacion_solicitada_at', 'verificacion_resuelta_at', 'verificacion_observacion',
+          'activo'
+        ])
+        && isValidId(data.id)
+        && isValidId(data.usuario_id)
+        && (!data.keys().hasAny(['nombre_publico']) || (
+          data.nombre_publico is string && data.nombre_publico.size() >= 2 && data.nombre_publico.size() <= 100
+        ))
+        && data.oficio is string && data.oficio.size() >= 3 && data.oficio.size() <= 80
+        && data.experiencia is int && data.experiencia >= 0 && data.experiencia <= 80
+        && data.descripcion is string && data.descripcion.size() >= 20 && data.descripcion.size() <= 2000
+        && data.ubicacion is string && data.ubicacion.size() >= 3 && data.ubicacion.size() <= 120
+        && (!data.keys().hasAny(['pais_codigo']) || data.pais_codigo in ['CL', 'AR', 'MX', 'CO', 'PE'])
+        && (!data.keys().hasAny(['pais_nombre']) || (data.pais_nombre is string && data.pais_nombre.size() >= 3 && data.pais_nombre.size() <= 40))
+        && (!data.keys().hasAny(['region_codigo']) || (data.region_codigo is string && data.region_codigo.size() >= 2 && data.region_codigo.size() <= 20))
+        && (!data.keys().hasAny(['region_nombre']) || (data.region_nombre is string && data.region_nombre.size() >= 2 && data.region_nombre.size() <= 100))
+        && (!data.keys().hasAny(['localidad_nombre']) || (data.localidad_nombre is string && data.localidad_nombre.size() >= 2 && data.localidad_nombre.size() <= 100))
+        && (!data.keys().hasAny(['moneda_codigo']) || data.moneda_codigo in ['CLP', 'ARS', 'MXN', 'COP', 'PEN'])
+        && (!data.keys().hasAny(['prefijo_telefonico']) || (data.prefijo_telefonico is string && data.prefijo_telefonico.size() >= 2 && data.prefijo_telefonico.size() <= 5))
+        && data.foto_perfil is string && data.foto_perfil.size() <= 500
+        && data.whatsapp is string && data.whatsapp.size() >= 8 && data.whatsapp.size() <= 20
+        && (data.calificacion_promedio is int || data.calificacion_promedio is float)
+        && data.calificacion_promedio >= 0 && data.calificacion_promedio <= 5
+        && (!data.keys().hasAny(['categoria_id']) || isValidCategoria(data.categoria_id))
+        && (!data.keys().hasAny(['categorias']) || (
+          data.categorias is list
+          && data.categorias.size() >= 1
+          && data.categorias.size() <= 5
+          && isValidCategoria(data.categorias[0])
+          && (data.categorias.size() < 2 || isValidCategoria(data.categorias[1]))
+          && (data.categorias.size() < 3 || isValidCategoria(data.categorias[2]))
+          && (data.categorias.size() < 4 || isValidCategoria(data.categorias[3]))
+          && (data.categorias.size() < 5 || isValidCategoria(data.categorias[4]))
+        ))
+        && (!(data.keys().hasAll(['categoria_id', 'categorias'])) || data.categoria_id == data.categorias[0])
+        && (!data.keys().hasAny(['cantidad_resenas']) || (
+          data.cantidad_resenas is int && data.cantidad_resenas >= 0
+        ))
+        && (!data.keys().hasAny(['verificado']) || data.verificado is bool)
+        && (!data.keys().hasAny(['activo']) || data.activo is bool)
+        && (!data.keys().hasAny(['fotos_trabajos']) || (
+          data.fotos_trabajos is list && data.fotos_trabajos.size() <= 12
+        ))
+        && (!data.keys().hasAny(['disponibilidad']) || (
+          data.disponibilidad is string
+          && data.disponibilidad in ['disponible_ahora', 'disponible_hoy', 'con_agenda', 'no_disponible']
+        ))
+        && (!data.keys().hasAny(['horario_atencion']) || (
+          data.horario_atencion is string && data.horario_atencion.size() <= 120
+        ))
+        && (!data.keys().hasAny(['agenda_semanal']) || isValidAgendaSemanal(data.agenda_semanal))
+        && (!data.keys().hasAny(['estado_verificacion']) || (
+          data.estado_verificacion is string
+          && data.estado_verificacion in ['sin_solicitar', 'pendiente', 'verificado', 'rechazado']
+        ))
+        && (!data.keys().hasAny(['verificacion_solicitada_at']) || data.verificacion_solicitada_at is timestamp)
+        && (!data.keys().hasAny(['verificacion_resuelta_at']) || data.verificacion_resuelta_at is timestamp)
+        && (!data.keys().hasAny(['verificacion_observacion']) || (
+          data.verificacion_observacion is string && data.verificacion_observacion.size() <= 300
+        ))
+        && (!data.keys().hasAny(['estado_verificacion']) || (
+          (data.estado_verificacion == 'verificado' && data.verificado == true)
+          || (data.estado_verificacion != 'verificado' && data.verificado == false)
+        ));
+    }
+
+    function isValidReporte(data) {
+      return data.keys().hasAll([
+          'id', 'reportante_id', 'reportante_nombre', 'tipo',
+          'motivo', 'descripcion', 'estado', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'reportante_id', 'reportante_nombre', 'tipo', 'proveedor_id', 'cliente_id',
+          'solicitud_id', 'resena_id', 'motivo', 'descripcion', 'estado', 'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.id)
+        && data.reportante_id == request.auth.uid
+        && data.reportante_nombre is string && data.reportante_nombre.size() >= 2 && data.reportante_nombre.size() <= 100
+        && data.tipo in ['proveedor', 'cliente', 'resena']
+        && (!data.keys().hasAny(['proveedor_id']) || isValidId(data.proveedor_id))
+        && (!data.keys().hasAny(['cliente_id']) || isValidId(data.cliente_id))
+        && (!data.keys().hasAny(['solicitud_id']) || isValidId(data.solicitud_id))
+        && (!data.keys().hasAny(['resena_id']) || isValidId(data.resena_id))
+        && data.motivo in ['contenido_inapropiado', 'informacion_falsa', 'spam', 'conducta_inadecuada', 'otro']
+        && data.descripcion is string && data.descripcion.size() >= 3 && data.descripcion.size() <= 600
+        && data.estado in ['pendiente', 'revisado', 'descartado']
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidApelacion(data) {
+      return data.keys().hasAll([
+          'id', 'usuario_id', 'usuario_nombre', 'usuario_email', 'usuario_tipo',
+          'estado_cuenta', 'motivo_moderacion', 'mensaje', 'estado', 'respuesta_admin',
+          'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'usuario_id', 'usuario_nombre', 'usuario_email', 'usuario_tipo',
+          'estado_cuenta', 'motivo_moderacion', 'mensaje', 'estado', 'respuesta_admin',
+          'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.id)
+        && isValidId(data.usuario_id)
+        && data.usuario_nombre is string && data.usuario_nombre.size() >= 2 && data.usuario_nombre.size() <= 100
+        && data.usuario_email is string && data.usuario_email.size() >= 5 && data.usuario_email.size() <= 254
+        && data.usuario_tipo in ['cliente', 'proveedor']
+        && data.estado_cuenta in ['suspendida', 'eliminada']
+        && data.motivo_moderacion is string && data.motivo_moderacion.size() <= 300
+        && data.mensaje is string && data.mensaje.size() >= 10 && data.mensaje.size() <= 1000
+        && data.estado in ['pendiente', 'aprobada', 'rechazada']
+        && data.respuesta_admin is string && data.respuesta_admin.size() <= 500
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+
+    function isValidSolicitudPrivacidad(data) {
+      return data.keys().hasAll([
+          'id', 'usuario_id', 'usuario_nombre', 'usuario_email', 'usuario_tipo',
+          'tipo', 'detalle', 'solicita_bloqueo_temporal', 'estado_bloqueo',
+          'estado', 'respuesta_admin', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'usuario_id', 'usuario_nombre', 'usuario_email', 'usuario_tipo',
+          'tipo', 'detalle', 'solicita_bloqueo_temporal', 'estado_bloqueo',
+          'estado', 'respuesta_admin', 'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.id)
+        && isValidId(data.usuario_id)
+        && data.usuario_nombre is string && data.usuario_nombre.size() >= 2 && data.usuario_nombre.size() <= 100
+        && data.usuario_email is string && data.usuario_email.size() >= 5 && data.usuario_email.size() <= 254
+        && data.usuario_tipo in ['cliente', 'proveedor', 'admin']
+        && data.tipo in ['acceso', 'rectificacion', 'supresion', 'oposicion', 'portabilidad']
+        && data.detalle is string && data.detalle.size() >= 10 && data.detalle.size() <= 1500
+        && data.solicita_bloqueo_temporal is bool
+        && data.estado_bloqueo in ['no_solicitado', 'pendiente', 'aprobado', 'rechazado']
+        && data.estado in ['pendiente', 'en_revision', 'resuelta', 'rechazada']
+        && data.respuesta_admin is string && data.respuesta_admin.size() <= 1500
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp
+        && (
+          data.solicita_bloqueo_temporal == false
+          || data.tipo in ['rectificacion', 'supresion', 'oposicion']
+        );
+    }
+
+    function isValidAdminAudit(data) {
+      return data.keys().hasAll([
+          'id', 'admin_id', 'admin_nombre', 'accion', 'objetivo_id',
+          'objetivo_nombre', 'detalle', 'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'admin_id', 'admin_nombre', 'accion', 'objetivo_id',
+          'objetivo_nombre', 'detalle', 'createdAt'
+        ])
+        && isValidId(data.id)
+        && isValidId(data.admin_id)
+        && data.admin_nombre is string && data.admin_nombre.size() >= 2 && data.admin_nombre.size() <= 100
+        && data.accion is string && data.accion.size() >= 3 && data.accion.size() <= 80
+        && isValidId(data.objetivo_id)
+        && data.objetivo_nombre is string && data.objetivo_nombre.size() >= 1 && data.objetivo_nombre.size() <= 120
+        && data.detalle is string && data.detalle.size() <= 500
+        && data.createdAt is timestamp;
+    }
+
+    function isValidSolicitud(data) {
+      return data.keys().hasAll([
+          'id', 'cliente_id', 'cliente_nombre', 'proveedor_id', 'proveedor_oficio',
+          'descripcion', 'ubicacion', 'telefono_contacto', 'estado', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'cliente_id', 'cliente_nombre', 'proveedor_id', 'proveedor_oficio',
+          'descripcion', 'ubicacion', 'telefono_contacto', 'fecha_preferida', 'hora_preferida', 'estado', 'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.id)
+        && isValidId(data.cliente_id)
+        && isValidId(data.proveedor_id)
+        && data.cliente_nombre is string && data.cliente_nombre.size() >= 2 && data.cliente_nombre.size() <= 100
+        && data.proveedor_oficio is string && data.proveedor_oficio.size() >= 3 && data.proveedor_oficio.size() <= 80
+        && data.descripcion is string && data.descripcion.size() >= 15 && data.descripcion.size() <= 1000
+        && data.ubicacion is string && data.ubicacion.size() >= 3 && data.ubicacion.size() <= 120
+        && data.telefono_contacto is string && data.telefono_contacto.size() >= 8 && data.telefono_contacto.size() <= 20
+        && (
+          !data.keys().hasAny(['fecha_preferida', 'hora_preferida'])
+          || (
+            data.keys().hasAll(['fecha_preferida', 'hora_preferida'])
+            && data.fecha_preferida is string
+            && data.fecha_preferida.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+            && data.hora_preferida is string
+            && data.hora_preferida.matches('^[0-9]{2}:[0-9]{2}$')
+          )
+        )
+        && data.estado in ['solicitada', 'aceptada', 'rechazada', 'en_proceso', 'completada', 'cancelada']
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidHistorialSolicitud(data, historialId) {
+      return data.keys().hasAll(['id', 'estado', 'actor_id', 'actor_rol', 'fecha'])
+        && data.keys().hasOnly(['id', 'estado', 'actor_id', 'actor_rol', 'fecha'])
+        && data.id == historialId
+        && data.estado == historialId
+        && historialId in ['solicitada', 'aceptada', 'rechazada', 'en_proceso', 'completada', 'cancelada']
+        && isValidId(data.actor_id)
+        && data.actor_rol in ['cliente', 'proveedor', 'admin']
+        && data.fecha is timestamp;
+    }
+
+    function historialCreateAllowed(solicitudId, historialId, data) {
+      let after = getAfter(/databases/$(database)/documents/solicitudes/$(solicitudId)).data;
+      return data.actor_id == request.auth.uid
+        && data.fecha == request.time
+        && after.updatedAt == request.time
+        && after.estado == historialId
+        && (
+          (
+            historialId == 'solicitada'
+            && after.cliente_id == request.auth.uid
+            && data.actor_rol == 'cliente'
+          )
+          || (
+            historialId in ['aceptada', 'rechazada', 'en_proceso', 'completada']
+            && after.proveedor_id == request.auth.uid
+            && data.actor_rol == 'proveedor'
+          )
+          || (
+            historialId == 'cancelada'
+            && (
+              (after.cliente_id == request.auth.uid && data.actor_rol == 'cliente')
+              || (after.proveedor_id == request.auth.uid && data.actor_rol == 'proveedor')
+            )
+          )
+          || (data.actor_rol == 'admin' && isAdmin())
+        );
+    }
+
+    function providerTransitionAllowed(oldStatus, newStatus) {
+      return (oldStatus == 'solicitada' && newStatus in ['aceptada', 'rechazada'])
+        || (oldStatus == 'aceptada' && newStatus in ['en_proceso', 'cancelada'])
+        || (oldStatus == 'en_proceso' && newStatus in ['completada', 'cancelada']);
+    }
+
+    function clientTransitionAllowed(oldStatus, newStatus) {
+      return oldStatus in ['solicitada', 'aceptada'] && newStatus == 'cancelada';
+    }
+
+    function isValidResena(data) {
+      return data.keys().hasAll([
+          'id', 'solicitud_id', 'cliente_id', 'cliente_nombre', 'proveedor_id',
+          'calificacion', 'comentario', 'fecha'
+        ])
+        && data.keys().hasOnly([
+          'id', 'solicitud_id', 'cliente_id', 'cliente_nombre', 'proveedor_id',
+          'calificacion', 'comentario', 'fecha'
+        ])
+        && isValidId(data.id)
+        && isValidId(data.solicitud_id)
+        && isValidId(data.cliente_id)
+        && isValidId(data.proveedor_id)
+        && data.cliente_nombre is string && data.cliente_nombre.size() >= 2 && data.cliente_nombre.size() <= 100
+        && data.calificacion is int && data.calificacion >= 1 && data.calificacion <= 5
+        && data.comentario is string && data.comentario.size() >= 10 && data.comentario.size() <= 1000
+        && data.fecha is timestamp;
+    }
+
+    function isSolicitudParticipant(solicitudId) {
+      let solicitud = get(/databases/$(database)/documents/solicitudes/$(solicitudId)).data;
+      return isSignedIn() && (
+        solicitud.cliente_id == request.auth.uid
+        || solicitud.proveedor_id == request.auth.uid
+        || isAdmin()
+      );
+    }
+
+    function isValidMensajeSolicitud(data, solicitudId, mensajeId) {
+      return data.keys().hasAll([
+          'id', 'solicitud_id', 'remitente_id', 'remitente_nombre',
+          'remitente_rol', 'texto', 'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'solicitud_id', 'remitente_id', 'remitente_nombre',
+          'remitente_rol', 'texto', 'createdAt'
+        ])
+        && data.id == mensajeId
+        && data.solicitud_id == solicitudId
+        && isValidId(data.id)
+        && data.remitente_id == request.auth.uid
+        && data.remitente_nombre is string
+        && data.remitente_nombre.size() >= 2
+        && data.remitente_nombre.size() <= 100
+        && data.remitente_rol in ['cliente', 'proveedor']
+        && data.texto is string
+        && data.texto.size() >= 1
+        && data.texto.size() <= 1000
+        && data.createdAt is timestamp;
+    }
+
+
+    function isValidCotizacion(data, solicitudId) {
+      let hasExtended = data.keys().hasAll([
+        'costo_visita', 'descuento', 'anticipo', 'forma_pago', 'vigencia_dias', 'vigencia_hasta'
+      ]);
+      let hasAnyExtended = data.keys().hasAny([
+        'costo_visita', 'descuento', 'anticipo', 'forma_pago', 'vigencia_dias', 'vigencia_hasta'
+      ]);
+      let baseTotal = data.mano_obra + data.materiales + data.otros;
+      return data.keys().hasAll([
+          'id', 'solicitud_id', 'proveedor_id', 'cliente_id', 'mano_obra',
+          'materiales', 'otros', 'total', 'observaciones', 'estado', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'solicitud_id', 'proveedor_id', 'cliente_id', 'mano_obra',
+          'materiales', 'otros', 'costo_visita', 'descuento', 'anticipo', 'total',
+          'forma_pago', 'vigencia_dias', 'vigencia_hasta',
+          'observaciones', 'estado', 'createdAt', 'updatedAt'
+        ])
+        && data.id == 'actual'
+        && data.solicitud_id == solicitudId
+        && isValidId(data.proveedor_id)
+        && isValidId(data.cliente_id)
+        && data.mano_obra is int && data.mano_obra >= 0 && data.mano_obra <= 100000000
+        && data.materiales is int && data.materiales >= 0 && data.materiales <= 100000000
+        && data.otros is int && data.otros >= 0 && data.otros <= 100000000
+        && data.total is int && data.total > 0 && data.total <= 100000000
+        && data.observaciones is string && data.observaciones.size() <= 500
+        && data.estado in ['enviada', 'aceptada', 'rechazada']
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp
+        && (
+          (!hasAnyExtended && data.total == baseTotal)
+          || (
+            hasExtended
+            && data.costo_visita is int && data.costo_visita >= 0 && data.costo_visita <= 100000000
+            && data.descuento is int && data.descuento >= 0 && data.descuento <= 100000000
+            && data.anticipo is int && data.anticipo >= 0 && data.anticipo <= data.total
+            && data.forma_pago in ['por_coordinar', 'efectivo', 'transferencia', 'tarjeta', 'mixto']
+            && data.vigencia_dias in [3, 7, 15, 30]
+            && data.vigencia_hasta is timestamp
+            && data.descuento <= baseTotal + data.costo_visita
+            && data.total == baseTotal + data.costo_visita - data.descuento
+          )
+        );
+    }
+
+    function isValidCotizacionHistorial(data, solicitudId, historialId) {
+      let hasExtended = data.keys().hasAll([
+        'costo_visita', 'descuento', 'anticipo', 'forma_pago', 'vigencia_dias', 'vigencia_hasta'
+      ]);
+      let hasAnyExtended = data.keys().hasAny([
+        'costo_visita', 'descuento', 'anticipo', 'forma_pago', 'vigencia_dias', 'vigencia_hasta'
+      ]);
+      let baseTotal = data.mano_obra + data.materiales + data.otros;
+      return data.keys().hasAll([
+          'id', 'solicitud_id', 'proveedor_id', 'cliente_id', 'mano_obra', 'materiales',
+          'otros', 'total', 'observaciones', 'estado', 'createdAt', 'updatedAt', 'archivadaAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'solicitud_id', 'proveedor_id', 'cliente_id', 'mano_obra', 'materiales',
+          'otros', 'costo_visita', 'descuento', 'anticipo', 'total', 'forma_pago',
+          'vigencia_dias', 'vigencia_hasta', 'observaciones', 'estado',
+          'createdAt', 'updatedAt', 'archivadaAt'
+        ])
+        && data.id == historialId
+        && data.solicitud_id == solicitudId
+        && isValidId(data.id)
+        && isValidId(data.proveedor_id)
+        && isValidId(data.cliente_id)
+        && data.mano_obra is int && data.mano_obra >= 0 && data.mano_obra <= 100000000
+        && data.materiales is int && data.materiales >= 0 && data.materiales <= 100000000
+        && data.otros is int && data.otros >= 0 && data.otros <= 100000000
+        && data.total is int && data.total > 0 && data.total <= 100000000
+        && data.observaciones is string && data.observaciones.size() <= 500
+        && data.estado in ['enviada', 'aceptada', 'rechazada']
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp
+        && data.archivadaAt is timestamp
+        && (
+          (!hasAnyExtended && data.total == baseTotal)
+          || (
+            hasExtended
+            && data.costo_visita is int && data.costo_visita >= 0 && data.costo_visita <= 100000000
+            && data.descuento is int && data.descuento >= 0 && data.descuento <= 100000000
+            && data.anticipo is int && data.anticipo >= 0 && data.anticipo <= data.total
+            && data.forma_pago in ['por_coordinar', 'efectivo', 'transferencia', 'tarjeta', 'mixto']
+            && data.vigencia_dias in [3, 7, 15, 30]
+            && data.vigencia_hasta is timestamp
+            && data.descuento <= baseTotal + data.costo_visita
+            && data.total == baseTotal + data.costo_visita - data.descuento
+          )
+        );
+    }
+
+    function isValidPushToken(data) {
+      return data.keys().hasAll(['token', 'platform', 'updatedAt'])
+        && data.keys().hasOnly(['token', 'platform', 'updatedAt'])
+        && data.token is string
+        && data.token.size() >= 20
+        && data.token.size() <= 1200
+        && data.platform == 'android'
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidNotificacion(data) {
+      return data.keys().hasAll([
+          'id', 'usuario_id', 'tipo', 'titulo', 'mensaje', 'leida', 'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'usuario_id', 'solicitud_id', 'tipo', 'titulo', 'mensaje',
+          'estado_solicitud', 'leida', 'createdAt'
+        ])
+        && isValidId(data.id)
+        && isValidId(data.usuario_id)
+        && data.tipo in ['nueva_solicitud', 'estado_solicitud', 'nueva_resena', 'nuevo_mensaje', 'cotizacion', 'verificacion']
+        && data.titulo is string && data.titulo.size() >= 3 && data.titulo.size() <= 100
+        && data.mensaje is string && data.mensaje.size() >= 3 && data.mensaje.size() <= 300
+        && data.leida is bool
+        && data.createdAt is timestamp
+        && (
+          (
+            data.tipo == 'verificacion'
+            && !data.keys().hasAny(['solicitud_id', 'estado_solicitud'])
+          )
+          || (
+            data.tipo != 'verificacion'
+            && data.keys().hasAll(['solicitud_id', 'estado_solicitud'])
+            && isValidId(data.solicitud_id)
+            && data.estado_solicitud in ['solicitada', 'aceptada', 'rechazada', 'en_proceso', 'completada', 'cancelada']
+          )
+        );
+    }
+
+    function isValidReviewNotification(userId, notificationId, data) {
+      let solicitudId = data.solicitud_id;
+      let solicitud = getAfter(/databases/$(database)/documents/solicitudes/$(solicitudId)).data;
+      let resena = getAfter(/databases/$(database)/documents/proveedores/$(userId)/resenas/$(solicitudId)).data;
+      return data.tipo == 'nueva_resena'
+        && notificationId == solicitudId + '_resena'
+        && data.estado_solicitud == 'completada'
+        && solicitud.estado == 'completada'
+        && solicitud.cliente_id == request.auth.uid
+        && solicitud.proveedor_id == userId
+        && resena.solicitud_id == solicitudId
+        && resena.cliente_id == request.auth.uid
+        && resena.proveedor_id == userId;
+    }
+
+    function isValidStatusNotification(userId, notificationId, data) {
+      let solicitudId = data.solicitud_id;
+      let before = get(/databases/$(database)/documents/solicitudes/$(solicitudId)).data;
+      let after = getAfter(/databases/$(database)/documents/solicitudes/$(solicitudId)).data;
+      return data.tipo == 'estado_solicitud'
+        && notificationId == solicitudId + '_' + data.estado_solicitud
+        && after.estado == data.estado_solicitud
+        && before.cliente_id == after.cliente_id
+        && before.proveedor_id == after.proveedor_id
+        && (
+          (
+            before.proveedor_id == request.auth.uid
+            && after.cliente_id == userId
+            && providerTransitionAllowed(before.estado, after.estado)
+          )
+          || (
+            before.cliente_id == request.auth.uid
+            && after.proveedor_id == userId
+            && clientTransitionAllowed(before.estado, after.estado)
+          )
+        );
+    }
+
+    function isValidMessageNotification(userId, notificationId, data) {
+      let solicitudId = data.solicitud_id;
+      let solicitud = get(/databases/$(database)/documents/solicitudes/$(solicitudId)).data;
+      let mensaje = get(/databases/$(database)/documents/solicitudes/$(solicitudId)/mensajes/$(notificationId)).data;
+      return data.tipo == 'nuevo_mensaje'
+        && data.estado_solicitud == solicitud.estado
+        && mensaje.id == notificationId
+        && mensaje.solicitud_id == solicitudId
+        && mensaje.remitente_id == request.auth.uid
+        && (
+          (
+            solicitud.cliente_id == request.auth.uid
+            && solicitud.proveedor_id == userId
+          )
+          || (
+            solicitud.proveedor_id == request.auth.uid
+            && solicitud.cliente_id == userId
+          )
+        );
+    }
+
+
+    function isValidCotizacionNotification(userId, notificationId, data) {
+      let solicitudId = data.solicitud_id;
+      let solicitud = get(/databases/$(database)/documents/solicitudes/$(solicitudId)).data;
+      let cotizacion = get(/databases/$(database)/documents/solicitudes/$(solicitudId)/cotizacion/actual).data;
+      return data.tipo == 'cotizacion'
+        && data.estado_solicitud == solicitud.estado
+        && (
+          (
+            solicitud.proveedor_id == request.auth.uid
+            && solicitud.cliente_id == userId
+            && notificationId == solicitudId + '_cotizacion_enviada'
+            && cotizacion.estado == 'enviada'
+          )
+          || (
+            solicitud.cliente_id == request.auth.uid
+            && solicitud.proveedor_id == userId
+            && notificationId == solicitudId + '_cotizacion_aceptada'
+            && cotizacion.estado == 'aceptada'
+          )
+          || (
+            solicitud.cliente_id == request.auth.uid
+            && solicitud.proveedor_id == userId
+            && notificationId == solicitudId + '_cotizacion_rechazada'
+            && cotizacion.estado == 'rechazada'
+          )
+        );
+    }
+
+    function isValidNewRequestNotification(userId, notificationId, data) {
+      let solicitudId = data.solicitud_id;
+      let solicitud = getAfter(/databases/$(database)/documents/solicitudes/$(solicitudId)).data;
+      return data.tipo == 'nueva_solicitud'
+        && notificationId == solicitudId + '_solicitada'
+        && data.estado_solicitud == 'solicitada'
+        && solicitud.estado == 'solicitada'
+        && solicitud.cliente_id == request.auth.uid
+        && solicitud.proveedor_id == userId;
+    }
+
+    function notificationCreateAllowed(userId, notificationId, data) {
+      return data.usuario_id == userId
+        && data.leida == false
+        && data.createdAt == request.time
+        && (
+          (
+            data.tipo == 'verificacion'
+            && isAdmin()
+            && userId != request.auth.uid
+          )
+          || (
+            data.tipo == 'nueva_solicitud'
+            && isValidNewRequestNotification(userId, notificationId, data)
+          )
+          || (
+            data.tipo == 'estado_solicitud'
+            && isValidStatusNotification(userId, notificationId, data)
+          )
+          || (
+            data.tipo == 'nueva_resena'
+            && isValidReviewNotification(userId, notificationId, data)
+          )
+          || (
+            data.tipo == 'nuevo_mensaje'
+            && isValidMessageNotification(userId, notificationId, data)
+          )
+          || (
+            data.tipo == 'cotizacion'
+            && isValidCotizacionNotification(userId, notificationId, data)
+          )
+        );
+    }
+
+    match /auditoria_admin/{auditId} {
+      allow get, list: if isAdmin();
+
+      allow create: if isAdmin()
+        && isValidAdminAudit(request.resource.data)
+        && request.resource.data.id == auditId
+        && request.resource.data.admin_id == request.auth.uid
+        && request.resource.data.createdAt == request.time;
+
+      allow update, delete: if false;
+    }
+
+    match /usuarios/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+
+      allow create: if isOwner(userId)
+        && isValidUsuario(request.resource.data)
+        && request.resource.data.id == request.auth.uid
+        && request.resource.data.tipo_usuario in ['cliente', 'proveedor']
+        && request.resource.data.pais_codigo in ['CL', 'AR', 'MX', 'CO', 'PE']
+        && request.resource.data.pais_nombre is string
+        && request.resource.data.region_codigo is string
+        && request.resource.data.region_nombre is string
+        && request.resource.data.localidad_nombre is string
+        && request.resource.data.moneda_codigo in ['CLP', 'ARS', 'MXN', 'COP', 'PEN']
+        && request.resource.data.prefijo_telefonico is string
+        && request.resource.data.jurisdiccion_politicas == request.resource.data.pais_codigo
+        && request.resource.data.politicas_aceptadas == true
+        && request.resource.data.politicas_version == '2026-08-11-17'
+        && request.resource.data.politicas_aceptadas_at == request.time
+        && request.resource.data.terminos_aceptados == true
+        && request.resource.data.terminos_version == '2026-08-11-17'
+        && request.resource.data.terminos_aceptados_at == request.time
+        && request.resource.data.privacidad_informada == true
+        && request.resource.data.privacidad_version == '2026-08-11-17'
+        && request.resource.data.privacidad_informada_at == request.time
+        && request.resource.data.mayor_18_declarado == true
+        && request.resource.data.mayor_18_declarado_at == request.time
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if (
+          // Edición de datos personales/geográficos. Se validan solo los campos editables
+          // para mantener compatibilidad con cuentas creadas por versiones anteriores.
+          isOwner(userId)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'nombre', 'telefono', 'pais_codigo', 'pais_nombre', 'region_codigo', 'region_nombre',
+            'localidad_nombre', 'moneda_codigo', 'prefijo_telefonico'
+          ])
+          && request.resource.data.nombre is string
+          && request.resource.data.nombre.size() >= 2
+          && request.resource.data.nombre.size() <= 100
+          && request.resource.data.telefono is string
+          && request.resource.data.telefono.size() >= 8
+          && request.resource.data.telefono.size() <= 20
+          && request.resource.data.pais_codigo in ['CL', 'AR', 'MX', 'CO', 'PE']
+          && request.resource.data.pais_nombre is string
+          && request.resource.data.pais_nombre.size() >= 3
+          && request.resource.data.pais_nombre.size() <= 40
+          && request.resource.data.region_codigo is string
+          && request.resource.data.region_codigo.size() >= 2
+          && request.resource.data.region_codigo.size() <= 20
+          && request.resource.data.region_nombre is string
+          && request.resource.data.region_nombre.size() >= 2
+          && request.resource.data.region_nombre.size() <= 100
+          && request.resource.data.localidad_nombre is string
+          && request.resource.data.localidad_nombre.size() >= 2
+          && request.resource.data.localidad_nombre.size() <= 100
+          && request.resource.data.moneda_codigo in ['CLP', 'ARS', 'MXN', 'COP', 'PEN']
+          && request.resource.data.prefijo_telefonico is string
+          && request.resource.data.prefijo_telefonico.size() >= 2
+          && request.resource.data.prefijo_telefonico.size() <= 5
+        ) || (
+          // Aceptación/actualización de políticas: validar solo los campos legales modificados.
+          // Esto mantiene compatibilidad con cuentas creadas por versiones anteriores,
+          // sin abrir permisos sobre el resto del perfil.
+          isOwner(userId)
+          && request.resource.data.politicas_aceptadas == true
+          && request.resource.data.jurisdiccion_politicas in ['CL', 'AR', 'MX', 'CO', 'PE']
+          && (
+            (request.resource.data.keys().hasAny(['pais_codigo']) && request.resource.data.jurisdiccion_politicas == request.resource.data.pais_codigo)
+            || (!request.resource.data.keys().hasAny(['pais_codigo']) && request.resource.data.jurisdiccion_politicas == 'CL')
+          )
+          && request.resource.data.politicas_version == '2026-08-11-17'
+          && request.resource.data.politicas_aceptadas_at == request.time
+          && request.resource.data.terminos_aceptados == true
+          && request.resource.data.terminos_version == '2026-08-11-17'
+          && request.resource.data.terminos_aceptados_at == request.time
+          && request.resource.data.privacidad_informada == true
+          && request.resource.data.privacidad_version == '2026-08-11-17'
+          && request.resource.data.privacidad_informada_at == request.time
+          && request.resource.data.mayor_18_declarado == true
+          && request.resource.data.mayor_18_declarado_at == request.time
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'politicas_aceptadas', 'jurisdiccion_politicas', 'politicas_version', 'politicas_aceptadas_at',
+            'terminos_aceptados', 'terminos_version', 'terminos_aceptados_at',
+            'privacidad_informada', 'privacidad_version', 'privacidad_informada_at',
+            'mayor_18_declarado', 'mayor_18_declarado_at'
+          ])
+          && request.resource.data.id == resource.data.id
+          && request.resource.data.email == resource.data.email
+          && request.resource.data.tipo_usuario == resource.data.tipo_usuario
+        ) || (
+          isOwner(userId)
+          && isValidUsuario(request.resource.data)
+          && resource.data.keys().hasAny(['reactivacion_pendiente'])
+          && resource.data.reactivacion_pendiente == true
+          && request.resource.data.reactivacion_pendiente == false
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactivacion_pendiente'])
+          && request.resource.data.id == resource.data.id
+          && request.resource.data.email == resource.data.email
+          && request.resource.data.tipo_usuario == resource.data.tipo_usuario
+        ) || (
+          isAdmin()
+          && resource.data.tipo_usuario != 'admin'
+          && isValidUsuario(request.resource.data)
+          && request.resource.data.id == resource.data.id
+          && request.resource.data.email == resource.data.email
+          && request.resource.data.tipo_usuario == resource.data.tipo_usuario
+          && request.resource.data.moderacion_actualizada_at == request.time
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'estado_cuenta', 'moderacion_motivo', 'moderacion_actualizada_at',
+            'reactivacion_pendiente', 'reactivada_at'
+          ])
+          && (
+            (
+              request.resource.data.estado_cuenta == 'activa'
+              && request.resource.data.reactivacion_pendiente == true
+              && request.resource.data.reactivada_at == request.time
+            )
+            || (
+              request.resource.data.estado_cuenta in ['suspendida', 'eliminada']
+              && request.resource.data.reactivacion_pendiente == false
+            )
+          )
+        );
+
+      allow delete: if false;
+
+      match /pushTokens/{tokenId} {
+        allow get, list: if isOwner(userId);
+
+        allow create, update: if isOwner(userId)
+          && tokenId.size() > 0
+          && tokenId.size() <= 1500
+          && isValidPushToken(request.resource.data)
+          && request.resource.data.updatedAt == request.time;
+
+        allow delete: if isOwner(userId);
+      }
+
+      match /notificaciones/{notificationId} {
+        allow get, list: if isOwner(userId);
+
+        allow create: if isSignedIn()
+          && isValidId(notificationId)
+          && isValidNotificacion(request.resource.data)
+          && request.resource.data.id == notificationId
+          && notificationCreateAllowed(userId, notificationId, request.resource.data);
+
+        allow update: if (
+          isOwner(userId)
+          && isValidNotificacion(request.resource.data)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['leida'])
+          && request.resource.data.leida == true
+        ) || (
+          isSignedIn()
+          && resource.data.tipo == 'cotizacion'
+          && request.resource.data.tipo == 'cotizacion'
+          && isValidNotificacion(request.resource.data)
+          && request.resource.data.id == notificationId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'titulo', 'mensaje', 'estado_solicitud', 'leida', 'createdAt'
+          ])
+          && notificationCreateAllowed(userId, notificationId, request.resource.data)
+        );
+
+        allow delete: if isOwner(userId) && resource.data.leida == true;
+      }
+
+      match /favoritos/{proveedorId} {
+        allow get, list: if isOwner(userId) && hasRole('cliente');
+
+        allow create: if isOwner(userId)
+          && hasRole('cliente')
+          && isValidId(proveedorId)
+          && request.resource.data.keys().hasAll(['proveedor_id', 'createdAt'])
+          && request.resource.data.keys().hasOnly(['proveedor_id', 'createdAt'])
+          && request.resource.data.proveedor_id == proveedorId
+          && request.resource.data.createdAt == request.time
+          && exists(/databases/$(database)/documents/proveedores/$(proveedorId));
+
+        allow update: if false;
+        allow delete: if isOwner(userId) && hasRole('cliente');
+      }
+    }
+
+    match /proveedores/{proveedorId} {
+      allow get, list: if true;
+
+      allow create: if isOwner(proveedorId)
+        && hasRoleAfter('proveedor')
+        && isValidProveedor(request.resource.data)
+        && request.resource.data.id == proveedorId
+        && request.resource.data.usuario_id == request.auth.uid
+        && request.resource.data.calificacion_promedio == 0
+        && request.resource.data.cantidad_resenas == 0
+        && request.resource.data.verificado == false
+        && (!request.resource.data.keys().hasAny(['estado_verificacion']) || request.resource.data.estado_verificacion == 'sin_solicitar');
+
+      allow update: if (
+          // 1) Disponibilidad y agenda. Esta rama va primero a propósito.
+          // El documento proveedores/{proveedorId} usa como ID el UID del dueño,
+          // por lo que isOwner(proveedorId) es suficiente para identificarlo.
+          // No dependemos de campos id/usuario_id que podrían faltar en perfiles antiguos.
+          isOwner(proveedorId)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'disponibilidad', 'horario_atencion', 'agenda_semanal'
+          ])
+          && request.resource.data.keys().hasAll([
+            'disponibilidad', 'horario_atencion', 'agenda_semanal'
+          ])
+          && request.resource.data.disponibilidad is string
+          && request.resource.data.disponibilidad in [
+            'disponible_ahora', 'disponible_hoy', 'con_agenda', 'no_disponible'
+          ]
+          && request.resource.data.horario_atencion is string
+          && request.resource.data.horario_atencion.size() <= 120
+          && isEditableAgendaSemanal(request.resource.data.agenda_semanal)
+        ) || (
+          // 2) Solicitud o re-solicitud de verificación por el dueño.
+          isOwner(proveedorId)
+          && hasRole('proveedor')
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'verificado', 'estado_verificacion', 'verificacion_solicitada_at',
+            'verificacion_observacion'
+          ])
+          && request.resource.data.verificado == false
+          && request.resource.data.estado_verificacion == 'pendiente'
+          && request.resource.data.verificacion_solicitada_at == request.time
+          && request.resource.data.verificacion_observacion == ''
+          && (
+            !resource.data.keys().hasAny(['estado_verificacion'])
+            || resource.data.estado_verificacion in ['sin_solicitar', 'rechazado']
+          )
+        ) || (
+          // 3) Nombre público: actualización independiente para perfiles antiguos.
+          isOwner(proveedorId)
+          && hasRole('proveedor')
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nombre_publico'])
+          && request.resource.data.nombre_publico is string
+          && request.resource.data.nombre_publico.size() >= 2
+          && request.resource.data.nombre_publico.size() <= 100
+        ) || (
+          // 4) Datos de cuenta que también alimentan la presentación pública.
+          // País, región y localidad se editan una sola vez desde Datos de la cuenta.
+          isOwner(proveedorId)
+          && hasRole('proveedor')
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'nombre_publico', 'ubicacion', 'pais_codigo', 'pais_nombre',
+            'region_codigo', 'region_nombre', 'localidad_nombre',
+            'moneda_codigo', 'prefijo_telefonico'
+          ])
+          && request.resource.data.nombre_publico is string
+          && request.resource.data.nombre_publico.size() >= 2
+          && request.resource.data.nombre_publico.size() <= 100
+          && request.resource.data.ubicacion is string
+          && request.resource.data.ubicacion.size() >= 3
+          && request.resource.data.ubicacion.size() <= 120
+          && request.resource.data.pais_codigo in ['CL', 'AR', 'MX', 'CO', 'PE']
+          && request.resource.data.pais_nombre is string
+          && request.resource.data.pais_nombre.size() >= 3
+          && request.resource.data.pais_nombre.size() <= 40
+          && request.resource.data.region_codigo is string
+          && request.resource.data.region_codigo.size() >= 2
+          && request.resource.data.region_codigo.size() <= 20
+          && request.resource.data.region_nombre is string
+          && request.resource.data.region_nombre.size() >= 2
+          && request.resource.data.region_nombre.size() <= 100
+          && request.resource.data.localidad_nombre is string
+          && request.resource.data.localidad_nombre.size() >= 2
+          && request.resource.data.localidad_nombre.size() <= 100
+          && request.resource.data.moneda_codigo in ['CLP', 'ARS', 'MXN', 'COP', 'PEN']
+          && request.resource.data.prefijo_telefonico is string
+          && request.resource.data.prefijo_telefonico.size() >= 2
+          && request.resource.data.prefijo_telefonico.size() <= 5
+        ) || (
+          // 5) Portafolio: actualización independiente y limitada a 12 elementos.
+          isOwner(proveedorId)
+          && hasRole('proveedor')
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fotos_trabajos'])
+          && request.resource.data.fotos_trabajos is list
+          && request.resource.data.fotos_trabajos.size() <= 12
+        ) || (
+          // 6) Edición normal de la presentación profesional por el proveedor.
+          // Solo valida los datos profesionales; ubicación y foto se administran desde la cuenta.
+          isOwner(proveedorId)
+          && hasRole('proveedor')
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'categoria_id', 'categorias', 'oficio', 'experiencia', 'descripcion', 'whatsapp'
+          ])
+          && isValidCategoria(request.resource.data.categoria_id)
+          && request.resource.data.categorias is list
+          && request.resource.data.categorias.size() >= 1
+          && request.resource.data.categorias.size() <= 5
+          && isValidCategoria(request.resource.data.categorias[0])
+          && (request.resource.data.categorias.size() < 2 || isValidCategoria(request.resource.data.categorias[1]))
+          && (request.resource.data.categorias.size() < 3 || isValidCategoria(request.resource.data.categorias[2]))
+          && (request.resource.data.categorias.size() < 4 || isValidCategoria(request.resource.data.categorias[3]))
+          && (request.resource.data.categorias.size() < 5 || isValidCategoria(request.resource.data.categorias[4]))
+          && request.resource.data.oficio is string
+          && request.resource.data.oficio.size() >= 3
+          && request.resource.data.oficio.size() <= 80
+          && request.resource.data.experiencia is int
+          && request.resource.data.experiencia >= 0
+          && request.resource.data.experiencia <= 80
+          && request.resource.data.descripcion is string
+          && request.resource.data.descripcion.size() >= 20
+          && request.resource.data.descripcion.size() <= 2000
+          && request.resource.data.whatsapp is string
+          && request.resource.data.whatsapp.size() >= 8
+          && request.resource.data.whatsapp.size() <= 20
+        ) || (
+          isAdmin()
+          && isValidProveedor(request.resource.data)
+          && request.resource.data.verificacion_resuelta_at == request.time
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'verificado', 'estado_verificacion', 'verificacion_resuelta_at', 'verificacion_observacion'
+          ])
+          && (
+            (request.resource.data.estado_verificacion == 'verificado' && request.resource.data.verificado == true)
+            || (request.resource.data.estado_verificacion in ['rechazado', 'sin_solicitar'] && request.resource.data.verificado == false)
+          )
+        ) || (
+          isAdmin()
+          && isValidProveedor(request.resource.data)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['activo'])
+        );
+
+      allow delete: if isAdmin();
+
+      match /resenas/{resenaId} {
+        allow get, list: if true;
+
+        allow create: if isSignedIn()
+          && isValidId(resenaId)
+          && isValidResena(request.resource.data)
+          && request.resource.data.id == resenaId
+          && request.resource.data.solicitud_id == resenaId
+          && request.resource.data.cliente_id == request.auth.uid
+          && request.resource.data.proveedor_id == proveedorId
+          && request.resource.data.fecha == request.time
+          && exists(/databases/$(database)/documents/solicitudes/$(resenaId))
+          && get(/databases/$(database)/documents/solicitudes/$(resenaId)).data.cliente_id == request.auth.uid
+          && get(/databases/$(database)/documents/solicitudes/$(resenaId)).data.proveedor_id == proveedorId
+          && get(/databases/$(database)/documents/solicitudes/$(resenaId)).data.estado == 'completada';
+
+        allow update: if false;
+        allow delete: if isAdmin();
+      }
+    }
+
+    match /solicitudes_privacidad/{solicitudPrivacidadId} {
+      allow get: if isAdmin() || (isSignedIn() && resource.data.usuario_id == request.auth.uid);
+      allow list: if isAdmin() || (isSignedIn() && resource.data.usuario_id == request.auth.uid);
+
+      allow create: if isSignedIn()
+        && !isAdmin()
+        && isValidSolicitudPrivacidad(request.resource.data)
+        && request.resource.data.id == solicitudPrivacidadId
+        && request.resource.data.usuario_id == request.auth.uid
+        && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid))
+        && request.resource.data.usuario_nombre == get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.nombre
+        && request.resource.data.usuario_email == get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.email
+        && request.resource.data.usuario_tipo == get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.tipo_usuario
+        && request.resource.data.estado == 'pendiente'
+        && request.resource.data.respuesta_admin == ''
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && (
+          (request.resource.data.solicita_bloqueo_temporal == false && request.resource.data.estado_bloqueo == 'no_solicitado')
+          || (
+            request.resource.data.solicita_bloqueo_temporal == true
+            && request.resource.data.tipo in ['rectificacion', 'supresion', 'oposicion']
+            && request.resource.data.estado_bloqueo == 'pendiente'
+          )
+        );
+
+      allow update: if isAdmin()
+        && isValidSolicitudPrivacidad(request.resource.data)
+        && request.resource.data.id == resource.data.id
+        && request.resource.data.usuario_id == resource.data.usuario_id
+        && request.resource.data.usuario_nombre == resource.data.usuario_nombre
+        && request.resource.data.usuario_email == resource.data.usuario_email
+        && request.resource.data.usuario_tipo == resource.data.usuario_tipo
+        && request.resource.data.tipo == resource.data.tipo
+        && request.resource.data.detalle == resource.data.detalle
+        && request.resource.data.solicita_bloqueo_temporal == resource.data.solicita_bloqueo_temporal
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'estado', 'estado_bloqueo', 'respuesta_admin', 'updatedAt'
+        ]);
+
+      allow delete: if false;
+    }
+
+    match /reportes/{reporteId} {
+      allow get: if isAdmin();
+      allow list: if isAdmin();
+
+      allow create: if isSignedIn()
+        && !isAdmin()
+        && isValidReporte(request.resource.data)
+        && request.resource.data.id == reporteId
+        && request.resource.data.estado == 'pendiente'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && (
+          (
+            request.resource.data.tipo == 'proveedor'
+            && hasRole('cliente')
+            && request.resource.data.keys().hasAny(['proveedor_id'])
+            && !request.resource.data.keys().hasAny(['cliente_id', 'solicitud_id', 'resena_id'])
+            && exists(/databases/$(database)/documents/proveedores/$(request.resource.data.proveedor_id))
+          )
+          || (
+            request.resource.data.tipo == 'resena'
+            && hasRole('cliente')
+            && request.resource.data.keys().hasAll(['proveedor_id', 'resena_id', 'cliente_id'])
+            && !request.resource.data.keys().hasAny(['solicitud_id'])
+            && exists(/databases/$(database)/documents/proveedores/$(request.resource.data.proveedor_id)/resenas/$(request.resource.data.resena_id))
+            && get(/databases/$(database)/documents/proveedores/$(request.resource.data.proveedor_id)/resenas/$(request.resource.data.resena_id)).data.cliente_id == request.resource.data.cliente_id
+          )
+          || (
+            request.resource.data.tipo == 'cliente'
+            && hasRole('proveedor')
+            && request.resource.data.keys().hasAll(['cliente_id', 'solicitud_id'])
+            && !request.resource.data.keys().hasAny(['proveedor_id', 'resena_id'])
+            && exists(/databases/$(database)/documents/usuarios/$(request.resource.data.cliente_id))
+            && get(/databases/$(database)/documents/usuarios/$(request.resource.data.cliente_id)).data.tipo_usuario == 'cliente'
+            && exists(/databases/$(database)/documents/solicitudes/$(request.resource.data.solicitud_id))
+            && get(/databases/$(database)/documents/solicitudes/$(request.resource.data.solicitud_id)).data.proveedor_id == request.auth.uid
+            && get(/databases/$(database)/documents/solicitudes/$(request.resource.data.solicitud_id)).data.cliente_id == request.resource.data.cliente_id
+          )
+        );
+
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['estado', 'updatedAt'])
+        && request.resource.data.estado in ['pendiente', 'revisado', 'descartado']
+        && request.resource.data.updatedAt == request.time;
+
+      allow delete: if false;
+    }
+
+    match /apelaciones/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+
+      allow create, update: if isOwner(userId)
+        && exists(/databases/$(database)/documents/usuarios/$(userId))
+        && get(/databases/$(database)/documents/usuarios/$(userId)).data.estado_cuenta in ['suspendida', 'eliminada']
+        && isValidApelacion(request.resource.data)
+        && request.resource.data.id == userId
+        && request.resource.data.usuario_id == userId
+        && request.resource.data.usuario_nombre == get(/databases/$(database)/documents/usuarios/$(userId)).data.nombre
+        && request.resource.data.usuario_email == get(/databases/$(database)/documents/usuarios/$(userId)).data.email
+        && request.resource.data.usuario_tipo == get(/databases/$(database)/documents/usuarios/$(userId)).data.tipo_usuario
+        && request.resource.data.estado_cuenta == get(/databases/$(database)/documents/usuarios/$(userId)).data.estado_cuenta
+        && request.resource.data.estado == 'pendiente'
+        && request.resource.data.respuesta_admin == ''
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+
+      allow update: if isAdmin()
+        && isValidApelacion(request.resource.data)
+        && request.resource.data.id == resource.data.id
+        && request.resource.data.usuario_id == resource.data.usuario_id
+        && request.resource.data.usuario_nombre == resource.data.usuario_nombre
+        && request.resource.data.usuario_email == resource.data.usuario_email
+        && request.resource.data.usuario_tipo == resource.data.usuario_tipo
+        && request.resource.data.estado_cuenta == resource.data.estado_cuenta
+        && request.resource.data.motivo_moderacion == resource.data.motivo_moderacion
+        && request.resource.data.mensaje == resource.data.mensaje
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.estado in ['aprobada', 'rechazada']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['estado', 'respuesta_admin', 'updatedAt']);
+
+      allow delete: if false;
+    }
+
+    match /solicitudes/{solicitudId} {
+      allow get, list: if isSignedIn() && (
+        resource.data.cliente_id == request.auth.uid
+        || resource.data.proveedor_id == request.auth.uid
+        || isAdmin()
+      );
+
+      allow create: if isSignedIn()
+        && isValidId(solicitudId)
+        && isValidSolicitud(request.resource.data)
+        && request.resource.data.id == solicitudId
+        && request.resource.data.cliente_id == request.auth.uid
+        && request.resource.data.estado == 'solicitada'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && exists(/databases/$(database)/documents/proveedores/$(request.resource.data.proveedor_id));
+
+      allow update: if isValidSolicitud(request.resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['estado', 'updatedAt'])
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time
+        && (
+          request.resource.data.estado != 'en_proceso'
+          || !exists(/databases/$(database)/documents/solicitudes/$(solicitudId)/cotizacion/actual)
+          || get(/databases/$(database)/documents/solicitudes/$(solicitudId)/cotizacion/actual).data.estado == 'aceptada'
+        )
+        && (
+          (resource.data.cliente_id == request.auth.uid
+            && clientTransitionAllowed(resource.data.estado, request.resource.data.estado))
+          || (resource.data.proveedor_id == request.auth.uid
+            && providerTransitionAllowed(resource.data.estado, request.resource.data.estado))
+          || isAdmin()
+        );
+
+
+      match /cotizacion/{cotizacionId} {
+        allow get, list: if isSolicitudParticipant(solicitudId);
+
+        allow create: if isSignedIn()
+          && cotizacionId == 'actual'
+          && isValidCotizacion(request.resource.data, solicitudId)
+          && request.resource.data.keys().hasAll([
+            'costo_visita', 'descuento', 'anticipo', 'forma_pago', 'vigencia_dias', 'vigencia_hasta'
+          ])
+          && request.resource.data.vigencia_hasta > request.time
+          && request.resource.data.estado == 'enviada'
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time
+          && get(/databases/$(database)/documents/solicitudes/$(solicitudId)).data.estado == 'aceptada'
+          && get(/databases/$(database)/documents/solicitudes/$(solicitudId)).data.proveedor_id == request.auth.uid
+          && request.resource.data.proveedor_id == request.auth.uid
+          && request.resource.data.cliente_id == get(/databases/$(database)/documents/solicitudes/$(solicitudId)).data.cliente_id;
+
+        allow update: if isSignedIn()
+          && cotizacionId == 'actual'
+          && isValidCotizacion(request.resource.data, solicitudId)
+          && request.resource.data.proveedor_id == resource.data.proveedor_id
+          && request.resource.data.cliente_id == resource.data.cliente_id
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.updatedAt == request.time
+          && get(/databases/$(database)/documents/solicitudes/$(solicitudId)).data.estado == 'aceptada'
+          && (
+            (
+              request.auth.uid == resource.data.proveedor_id
+              && (
+                resource.data.estado == 'rechazada'
+                || (
+                  resource.data.estado == 'enviada'
+                  && resource.data.keys().hasAny(['vigencia_hasta'])
+                  && resource.data.vigencia_hasta <= request.time
+                )
+              )
+              && request.resource.data.estado == 'enviada'
+              && request.resource.data.keys().hasAll([
+                'costo_visita', 'descuento', 'anticipo', 'forma_pago', 'vigencia_dias', 'vigencia_hasta'
+              ])
+              && request.resource.data.vigencia_hasta > request.time
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                'mano_obra', 'materiales', 'otros', 'costo_visita', 'descuento', 'anticipo',
+                'total', 'forma_pago', 'vigencia_dias', 'vigencia_hasta',
+                'observaciones', 'estado', 'updatedAt'
+              ])
+            )
+            || (
+              request.auth.uid == resource.data.cliente_id
+              && resource.data.estado == 'enviada'
+              && request.resource.data.estado in ['aceptada', 'rechazada']
+              && (
+                request.resource.data.estado == 'rechazada'
+                || !resource.data.keys().hasAny(['vigencia_hasta'])
+                || resource.data.vigencia_hasta > request.time
+              )
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['estado', 'updatedAt'])
+            )
+          );
+
+        allow delete: if false;
+      }
+
+      match /cotizaciones_historial/{historialId} {
+        allow get, list: if isSolicitudParticipant(solicitudId);
+
+        allow create: if isSignedIn()
+          && isValidCotizacionHistorial(request.resource.data, solicitudId, historialId)
+          && request.resource.data.archivadaAt == request.time
+          && (
+            request.resource.data.estado == 'rechazada'
+            || (
+              request.resource.data.estado == 'enviada'
+              && request.resource.data.keys().hasAny(['vigencia_hasta'])
+              && request.resource.data.vigencia_hasta <= request.time
+            )
+          )
+          && get(/databases/$(database)/documents/solicitudes/$(solicitudId)).data.estado == 'aceptada'
+          && get(/databases/$(database)/documents/solicitudes/$(solicitudId)).data.proveedor_id == request.auth.uid
+          && request.resource.data.proveedor_id == request.auth.uid
+          && request.resource.data.cliente_id == get(/databases/$(database)/documents/solicitudes/$(solicitudId)).data.cliente_id;
+
+        allow update, delete: if false;
+      }
+
+      match /mensajes/{mensajeId} {
+        allow get, list: if isSolicitudParticipant(solicitudId);
+
+        allow create: if isSignedIn()
+          && isSolicitudParticipant(solicitudId)
+          && isValidMensajeSolicitud(request.resource.data, solicitudId, mensajeId)
+          && request.resource.data.createdAt == request.time
+          && (
+            (
+              request.resource.data.remitente_rol == 'cliente'
+              && get(/databases/$(database)/documents/solicitudes/$(solicitudId)).data.cliente_id == request.auth.uid
+            )
+            || (
+              request.resource.data.remitente_rol == 'proveedor'
+              && get(/databases/$(database)/documents/solicitudes/$(solicitudId)).data.proveedor_id == request.auth.uid
+            )
+          )
+          && get(/databases/$(database)/documents/solicitudes/$(solicitudId)).data.estado != 'rechazada'
+          && get(/databases/$(database)/documents/solicitudes/$(solicitudId)).data.estado != 'cancelada';
+
+        allow update, delete: if false;
+      }
+
+      match /historial/{historialId} {
+        allow get, list: if isSignedIn() && (
+          get(/databases/$(database)/documents/solicitudes/$(solicitudId)).data.cliente_id == request.auth.uid
+          || get(/databases/$(database)/documents/solicitudes/$(solicitudId)).data.proveedor_id == request.auth.uid
+          || isAdmin()
+        );
+
+        allow create: if isSignedIn()
+          && isValidHistorialSolicitud(request.resource.data, historialId)
+          && historialCreateAllowed(solicitudId, historialId, request.resource.data);
+
+        allow update, delete: if false;
+      }
+
+      allow delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

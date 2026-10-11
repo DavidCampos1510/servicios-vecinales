@@ -1,0 +1,10 @@
+{
+  "projectId": "servicios-vecinales",
+  "appId": "REEMPLAZAR_CON_APP_ID",
+  "apiKey": "REEMPLAZAR_CON_API_KEY",
+  "authDomain": "servicios-vecinales.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "servicios-vecinales.firebasestorage.app",
+  "messagingSenderId": "REEMPLAZAR_CON_MESSAGING_SENDER_ID",
+  "measurementId": ""
+}

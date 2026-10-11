@@ -1,0 +1,63 @@
+{
+  "entities": {
+    "Usuario": {
+      "path": "usuarios/{userId}",
+      "fields": [
+        "id",
+        "nombre",
+        "email",
+        "telefono",
+        "tipo_usuario",
+        "createdAt"
+      ]
+    },
+    "Proveedor": {
+      "path": "proveedores/{proveedorId}",
+      "fields": [
+        "id",
+        "usuario_id",
+        "nombre_publico",
+        "categoria_id",
+        "oficio",
+        "experiencia",
+        "descripcion",
+        "ubicacion",
+        "foto_perfil",
+        "whatsapp",
+        "calificacion_promedio",
+        "cantidad_resenas",
+        "verificado",
+        "fotos_trabajos"
+      ]
+    },
+    "SolicitudServicio": {
+      "path": "solicitudes/{solicitudId}",
+      "fields": [
+        "id",
+        "cliente_id",
+        "cliente_nombre",
+        "proveedor_id",
+        "proveedor_oficio",
+        "descripcion",
+        "ubicacion",
+        "telefono_contacto",
+        "estado",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Resena": {
+      "path": "proveedores/{proveedorId}/resenas/{solicitudId}",
+      "fields": [
+        "id",
+        "solicitud_id",
+        "cliente_id",
+        "cliente_nombre",
+        "proveedor_id",
+        "calificacion",
+        "comentario",
+        "fecha"
+      ]
+    }
+  }
+}

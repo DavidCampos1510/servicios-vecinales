@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Servicios Vecinales</string>
+    <string name="title_activity_main">Servicios Vecinales</string>
+    <string name="package_name">cl.serviciosvecinales.app</string>
+    <string name="custom_url_scheme">cl.serviciosvecinales.app</string>
+</resources>

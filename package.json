@@ -1,0 +1,46 @@
+{
+  "name": "servicios-vecinales",
+  "private": true,
+  "version": "2.5.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port=3000 --host=0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview",
+    "clean": "rimraf dist",
+    "lint": "tsc --noEmit",
+    "firebase:rules": "node scripts/deploy-firestore.mjs",
+    "firebase:functions": "npm --prefix functions run build && firebase deploy --only functions",
+    "firebase:deploy": "npm run build && npm --prefix functions run build && firebase deploy",
+    "cap:add:android": "cap add android",
+    "cap:sync": "npm run build && cap sync",
+    "cap:open:android": "cap open android",
+    "android": "npm run cap:sync && npm run cap:open:android",
+    "firebase:check": "node scripts/check-firebase.mjs"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.0",
+    "@capacitor/core": "8.5.0",
+    "@capacitor/push-notifications": "^8.1.2",
+    "firebase": "^12.14.0",
+    "lucide-react": "^0.546.0",
+    "motion": "^12.23.24",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.0",
+    "@tailwindcss/vite": "^4.1.14",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^5.0.4",
+    "rimraf": "^6.0.0",
+    "tailwindcss": "^4.1.14",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

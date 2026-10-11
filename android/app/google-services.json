@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "749477529294",
+    "project_id": "servicios-vecinales",
+    "storage_bucket": "servicios-vecinales.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:749477529294:android:f08897e779d32d9ed6f29f",
+        "android_client_info": {
+          "package_name": "cl.serviciosvecinales.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAiF6Q-P2QklMBdG9iJaeAzyvzC7b_2sRM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
