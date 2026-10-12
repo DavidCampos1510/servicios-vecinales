@@ -437,7 +437,7 @@ export default function App() {
   return (
     <PhoneFrame>
       <div className="flex-1 flex flex-col h-full sv-screen relative overflow-hidden">
-        <div className="flex-1 overflow-hidden relative">
+        <div className="flex-1 min-h-0 overflow-hidden relative sv-main-pane">
           {loading ? (
             <div className="h-full flex flex-col items-center justify-center gap-3 text-slate-400">
               <div className="animate-spin rounded-full h-9 w-9 border-2 border-emerald-500 border-t-transparent" />
@@ -492,7 +492,7 @@ export default function App() {
         </div>
 
         {!((activeTab === 'servicios' && providerDetailOpen) || (activeTab === 'solicitudes' && requestDetailOpen)) && (
-          <nav className="absolute bottom-0 left-0 right-0 h-16 bg-white border-t border-slate-100 flex items-center justify-around px-3 z-20 shadow-lg sv-bottom-nav">
+          <nav className="relative shrink-0 h-16 bg-white border-t border-slate-100 flex items-center justify-around px-3 z-20 shadow-lg sv-bottom-nav">
             {tabs.filter((tab) => tab.visible).map((tab) => {
               const Icon = tab.icon;
               const active = activeTab === tab.id;

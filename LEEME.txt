@@ -1,0 +1,14 @@
+Servicios Vecinales — Parche 21.7 (sobre 21.6)
+
+Problema: franja gris vacía entre la lista de proveedores y la barra blanca de navegación.
+Causa: TabInicio.tsx conserva la clase pb-[70px] para la disposición antigua de navegación superpuesta; con el layout flex actual de Android deja una banda vacía de 70 px.
+
+Instalación:
+1. Conserva App.tsx y MainActivity.java del parche 21.6, sin cambios.
+2. Reemplaza únicamente src/index.css con el de este ZIP.
+3. Ejecuta npm run build && npx cap sync android; después instala desde Android Studio.
+
+Cambio: en Android, .native-app-shell .sv-search-screen { padding-bottom: 0 !important; }
+No afecta el diseño web. No mueve la barra blanca ni cambia Firebase.
+
+Nota: no fue posible probarlo en el dispositivo; comprobar visualmente.

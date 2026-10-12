@@ -1,3 +1,4 @@
+import { shareProviderProfile } from '../shareProviderProfile';
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import {
@@ -20,6 +21,9 @@ import {
   Phone,
   Plus,
   Save,
+  Settings,
+  ChevronRight,
+  Share2,
   ShieldCheck,
   Sparkles,
   Star,
@@ -54,7 +58,6 @@ import {
 import { GeoLocationFields } from './GeoLocationFields';
 import { LegalCenter } from './LegalCenter';
 import { PrivacyRightsCenter } from './PrivacyRightsCenter';
-import { AccessibilityPreferencesPanel } from './AccessibilityPreferencesPanel';
 import { auth, getFriendlyFirebaseError } from '../firebase';
 import { LEGAL_POLICIES_VERSION, type LegalSectionId } from '../legalPolicies';
 import { formatDate, isRealFirebaseConfigured, SVDatabaseService } from '../state/databaseService';
@@ -136,6 +139,8 @@ export function TabPerfil({
   const [passwordResetOpen, setPasswordResetOpen] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
+  const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
+  const [settingsView, setSettingsView] = useState<null | 'seguridad' | 'legal'>(null);
   const [legalOpen, setLegalOpen] = useState(false);
   const [legalInitialSection, setLegalInitialSection] = useState<LegalSectionId>('terminos');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -173,6 +178,12 @@ export function TabPerfil({
   const [providerSaving, setProviderSaving] = useState(false);
   const [providerError, setProviderError] = useState('');
   const [providerMessage, setProviderMessage] = useState('');
+  const [shareMessage, setShareMessage] = useState('');
+
+  const handleShareProviderProfile = async () => {
+    if (!currentProvider) return;
+    setShareMessage(await shareProviderProfile(currentProvider));
+  };
 
   const [availabilityStatus, setAvailabilityStatus] = useState<DisponibilidadProveedor>('con_agenda');
   const [availabilityHours, setAvailabilityHours] = useState('');
@@ -363,7 +374,7 @@ export function TabPerfil({
   };
 
   const handleClientPasswordReset = async () => {
-    if (!currentUser || currentUser.tipo_usuario !== 'cliente' || accountActionLoading) return;
+    if (!currentUser || !['cliente', 'proveedor'].includes(currentUser.tipo_usuario) || accountActionLoading) return;
     setAccountActionLoading(true);
     setAccountActionMessage('');
     setAccountActionError('');
@@ -1107,9 +1118,6 @@ export function TabPerfil({
             {!hasRealFirebase && <div className="mt-5 text-left bg-amber-50 border border-amber-100 rounded-xl p-3"><p className="text-[10px] text-amber-800"><b>Modo demo:</b> usa jane.doe@example.com, carlos.gomez@example.com o admin@example.com. La contraseña puede ser cualquier texto de 6 caracteres.</p></div>}
           </div>
         </motion.div>
-        <div className="px-4 pb-4">
-          <AccessibilityPreferencesPanel compact />
-        </div>
         {legalOpen && <LegalCenter countryCode={countryCode} initialSection={legalInitialSection} onClose={() => setLegalOpen(false)} />}
       </div>
     );
@@ -1119,18 +1127,109 @@ export function TabPerfil({
     <div className="flex flex-col h-full bg-slate-50 relative">
       <header className="relative z-50 h-14 bg-emerald-600 flex items-center justify-between px-4 text-white shadow-md shrink-0">
         <div><h2 className="font-bold text-sm">Mi perfil</h2><p className="text-[10px] text-white/80 capitalize">Cuenta {currentUser.tipo_usuario}</p></div>
-        {currentUser.tipo_usuario === 'admin' ? <ShieldCheck className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
+        {currentUser.tipo_usuario === 'admin' ? <ShieldCheck className="w-5 h-5" /> : (
+          <div className="relative">
+            <button type="button" aria-label="Configuración" aria-expanded={settingsMenuOpen} onClick={() => { setSettingsView(null); setSettingsMenuOpen((open) => !open); }} className="p-2 rounded-xl hover:bg-white/15" ><Settings className="w-5 h-5" /></button>
+            {settingsMenuOpen && <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl text-slate-800 z-[100]">
+              {(currentUser.tipo_usuario === 'cliente' || currentUser.tipo_usuario === 'proveedor') && <button type="button" onClick={() => { setSettingsView('seguridad'); setSettingsMenuOpen(false); }} className="w-full flex items-center gap-2 text-left p-3 rounded-xl hover:bg-slate-50 text-xs font-bold"><ShieldCheck className="w-4 h-4 text-emerald-600"/> Seguridad y cuenta <ChevronRight className="w-3.5 h-3.5 ml-auto"/></button>}
+              <button type="button" onClick={() => { setSettingsView('legal'); setSettingsMenuOpen(false); }} className="w-full flex items-center gap-2 text-left p-3 rounded-xl hover:bg-slate-50 text-xs font-bold"><ShieldCheck className="w-4 h-4 text-emerald-600"/> Legal y privacidad <ChevronRight className="w-3.5 h-3.5 ml-auto"/></button>
+            </div>}
+          </div>
+        )}
       </header>
 
-      <main className="relative z-0 flex-1 overflow-y-auto overflow-x-hidden px-4 pt-4 pb-20">
+      {settingsView !== null && <main className="flex-1 overflow-y-auto px-4 pt-4 pb-20">
+        <button type="button" onClick={() => setSettingsView(null)} className="flex items-center gap-1 text-xs font-bold text-emerald-700 py-2 mb-2"><ChevronLeft className="w-4 h-4"/> Volver a mi perfil</button>
+        <h2 className="font-black text-lg text-slate-800 mb-3">{settingsView === 'seguridad' ? 'Seguridad y cuenta' : 'Legal y privacidad'}</h2>
+        {settingsView === 'seguridad' && (currentUser.tipo_usuario === 'cliente' || currentUser.tipo_usuario === 'proveedor') && (
+                      <section className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 mt-4">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <h3 className="text-xs font-black text-slate-700 uppercase tracking-wide">Seguridad y cuenta</h3>
+              </div>
+              <div className="mt-3 space-y-2">
+                <div className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-3 py-2.5">
+                  <span className="text-[10px] text-slate-500">Estado de la cuenta</span>
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5">Activa</span>
+                </div>
+                <div className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-3 py-2.5">
+                  <span className="text-[10px] text-slate-500">Correo electrónico</span>
+                  <span className={`text-[10px] font-bold ${hasRealFirebase && auth.currentUser?.emailVerified ? 'text-emerald-700' : 'text-amber-600'}`}>
+                    {hasRealFirebase ? (auth.currentUser?.emailVerified ? 'Verificado' : 'Pendiente de verificar') : 'Modo demo'}
+                  </span>
+                </div>
+                {currentUser.createdAt && (
+                  <div className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-3 py-2.5">
+                    <span className="text-[10px] text-slate-500">Miembro desde</span>
+                    <span className="text-[10px] font-semibold text-slate-700">{formatDate(currentUser.createdAt)}</span>
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                disabled={accountActionLoading}
+                onClick={() => void handleClientPasswordReset()}
+                className="w-full mt-3 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold flex items-center justify-center gap-2 disabled:bg-slate-300"
+              >
+                <KeyRound className="w-4 h-4" /> {accountActionLoading ? 'Enviando...' : 'Cambiar contraseña'}
+              </button>
+              {accountActionMessage && <p className="mt-2 text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl p-2.5">{accountActionMessage}</p>}
+              {accountActionError && <p className="mt-2 text-[10px] text-rose-700 bg-rose-50 border border-rose-100 rounded-xl p-2.5">{accountActionError}</p>}
+            </section>
+        )}
+        {settingsView === 'legal' && (
+                  <section className="mt-4 bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-2 min-w-0">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <h3 className="text-xs font-black text-slate-700">Legal y privacidad</h3>
+                <p className="text-[10px] text-slate-400 mt-0.5">Términos, privacidad y normas de Servicios Vecinales.</p>
+              </div>
+            </div>
+            <span className={`shrink-0 text-[9px] font-bold px-2 py-1 rounded-full border ${legalUpToDate ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-amber-50 border-amber-100 text-amber-700'}`}>
+              {legalUpToDate ? 'Al día' : 'Pendiente'}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-1.5 mt-3">
+            <button type="button" onClick={() => openLegalSection(setLegalInitialSection, setLegalOpen, 'terminos')} className="py-2 rounded-xl bg-slate-50 border border-slate-100 text-[10px] font-bold text-slate-600">Términos</button>
+            <button type="button" onClick={() => openLegalSection(setLegalInitialSection, setLegalOpen, 'privacidad')} className="py-2 rounded-xl bg-slate-50 border border-slate-100 text-[10px] font-bold text-slate-600">Política de privacidad</button>
+            <button type="button" onClick={() => openLegalSection(setLegalInitialSection, setLegalOpen, 'normas')} className="py-2 rounded-xl bg-slate-50 border border-slate-100 text-[10px] font-bold text-slate-600">Normas</button>
+            {currentUser.tipo_usuario !== 'admin' && <button type="button" onClick={() => setPrivacyCenterOpen(true)} className="py-2 rounded-xl bg-emerald-50 border border-emerald-100 text-[10px] font-bold text-emerald-700">Mis datos y derechos</button>}
+          </div>
+          {!legalUpToDate && (
+            <div className="mt-3">
+              {!currentUser.mayor_18_declarado && (
+                <label className="flex items-start gap-2 rounded-xl bg-amber-50 border border-amber-100 p-2.5 mb-2 cursor-pointer">
+                  <input type="checkbox" checked={existingAdultDeclared} onChange={(event) => setExistingAdultDeclared(event.target.checked)} className="mt-0.5 accent-emerald-600" />
+                  <span className="text-[10px] text-amber-800 leading-relaxed">Declaro tener 18 años o más.</span>
+                </label>
+              )}
+              <button
+                type="button"
+                onClick={() => void handleAcceptCurrentPolicies()}
+                disabled={policySaving || !existingAdultDeclared}
+                className="w-full py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold disabled:bg-slate-300"
+              >
+                {policySaving ? 'Guardando...' : `Aceptar términos y confirmar lectura · ${LEGAL_POLICIES_VERSION}`}
+              </button>
+            </div>
+          )}
+          {policyMessage && <p className="mt-2 text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl p-2.5">{policyMessage}</p>}
+          {policyError && <p className="mt-2 text-[10px] text-rose-700 bg-rose-50 border border-rose-100 rounded-xl p-2.5">{policyError}</p>}
+        </section>
+        )}
+      </main>}
+      <main className={`relative z-0 flex-1 overflow-y-auto overflow-x-hidden px-4 pt-4 pb-20 ${settingsView !== null ? 'hidden' : ''}`}>
+
         <section className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
           <div className="flex items-center justify-between gap-3 mb-3">
             <div>
               <h3 className="text-xs font-black text-slate-700 uppercase tracking-wide">Datos de la cuenta</h3>
               <p className="text-[10px] text-slate-400 mt-0.5">Identidad, contacto y ubicación principal.</p>
             </div>
-            <button type="button" onClick={() => setEditingPersonal((editing) => !editing)} className="px-2.5 py-1.5 rounded-xl bg-slate-100 text-slate-600 text-[10px] font-bold flex items-center gap-1">
-              <Pencil className="w-3.5 h-3.5" /> {editingPersonal ? 'Cerrar' : 'Editar datos'}
+            <button type="button" onClick={() => setEditingPersonal((editing) => !editing)} className="shrink-0 px-2 py-1 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-bold inline-flex items-center gap-1 whitespace-nowrap">
+              <Pencil className="w-3.5 h-3.5" /> {editingPersonal ? 'Cerrar' : 'Editar'}
             </button>
           </div>
           <div className="flex items-center gap-3">
@@ -1158,23 +1257,13 @@ export function TabPerfil({
 
           </div>
 
-          <div className="mt-3 flex items-center justify-between gap-2 rounded-xl bg-slate-50 border border-slate-100 px-3 py-2.5">
-            <div className="min-w-0">
-              <p className="text-[10px] font-bold text-slate-600">Foto de perfil</p>
-              <p className="text-[9px] text-slate-400 mt-0.5">{currentProvider ? 'Esta misma foto se usa en tu presentación pública en este dispositivo.' : 'Se guarda solo en este dispositivo. No usa Firebase Storage.'}</p>
+          {localProfilePhoto && (
+            <div className="mt-2 flex justify-end">
+              <button type="button" onClick={handleRemoveLocalProfilePhoto} disabled={localPhotoSaving}
+                className="inline-flex items-center gap-1 text-[10px] text-rose-600 px-2 py-1 rounded-lg hover:bg-rose-50 disabled:opacity-50"
+                title="Quitar foto local"><Trash2 className="w-3 h-3" /> Quitar foto</button>
             </div>
-            {localProfilePhoto && (
-              <button
-                type="button"
-                onClick={handleRemoveLocalProfilePhoto}
-                disabled={localPhotoSaving}
-                className="shrink-0 p-2 rounded-lg bg-white border border-slate-200 text-rose-600 disabled:opacity-50"
-                title="Quitar foto local"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+          )}
           {localPhotoSaving && <p className="mt-2 text-[10px] text-emerald-700">Preparando y guardando foto...</p>}
           {localPhotoError && <p className="mt-2 text-[10px] text-rose-700 bg-rose-50 border border-rose-100 rounded-xl p-2.5">{localPhotoError}</p>}
 
@@ -1195,7 +1284,7 @@ export function TabPerfil({
             </form>
           ) : (
             <>
-              <div className="mt-4 grid grid-cols-2 gap-2 text-[11px]"><div className="bg-slate-50 rounded-xl p-2.5 text-slate-500 flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> {currentUser.telefono}</div><div className="bg-slate-50 rounded-xl p-2.5 text-slate-500 flex items-center gap-1"><Mail className="w-3.5 h-3.5" /> {hasRealFirebase && auth.currentUser?.emailVerified ? 'Correo verificado' : 'Correo registrado'}</div></div>
+              <div className="mt-4 rounded-xl bg-slate-50 p-2.5 text-[11px] text-slate-500 flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> {currentUser.telefono}</div>
               {(currentUser.localidad_nombre || currentUser.region_nombre || currentUser.pais_nombre) && (
                 <div className="mt-2 bg-slate-50 rounded-xl p-2.5 text-[11px] text-slate-500 flex items-start gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
@@ -1235,40 +1324,7 @@ export function TabPerfil({
               </div>
             </section>
 
-            <section className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 mt-4">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <h3 className="text-xs font-black text-slate-700 uppercase tracking-wide">Seguridad y cuenta</h3>
-              </div>
-              <div className="mt-3 space-y-2">
-                <div className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-3 py-2.5">
-                  <span className="text-[10px] text-slate-500">Estado de la cuenta</span>
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5">Activa</span>
-                </div>
-                <div className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-3 py-2.5">
-                  <span className="text-[10px] text-slate-500">Correo electrónico</span>
-                  <span className={`text-[10px] font-bold ${hasRealFirebase && auth.currentUser?.emailVerified ? 'text-emerald-700' : 'text-amber-600'}`}>
-                    {hasRealFirebase ? (auth.currentUser?.emailVerified ? 'Verificado' : 'Pendiente de verificar') : 'Modo demo'}
-                  </span>
-                </div>
-                {currentUser.createdAt && (
-                  <div className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-3 py-2.5">
-                    <span className="text-[10px] text-slate-500">Miembro desde</span>
-                    <span className="text-[10px] font-semibold text-slate-700">{formatDate(currentUser.createdAt)}</span>
-                  </div>
-                )}
-              </div>
-              <button
-                type="button"
-                disabled={accountActionLoading}
-                onClick={() => void handleClientPasswordReset()}
-                className="w-full mt-3 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold flex items-center justify-center gap-2 disabled:bg-slate-300"
-              >
-                <KeyRound className="w-4 h-4" /> {accountActionLoading ? 'Enviando...' : 'Cambiar contraseña'}
-              </button>
-              {accountActionMessage && <p className="mt-2 text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl p-2.5">{accountActionMessage}</p>}
-              {accountActionError && <p className="mt-2 text-[10px] text-rose-700 bg-rose-50 border border-rose-100 rounded-xl p-2.5">{accountActionError}</p>}
-            </section>
+
           </>
         )}
 
@@ -1326,8 +1382,11 @@ export function TabPerfil({
                       <h3 className="text-xs font-black text-slate-700 uppercase tracking-wide">Presentación pública</h3>
                       <p className="text-[10px] text-slate-400 mt-0.5">Lo que verán los clientes al abrir tu perfil profesional.</p>
                     </div>
-                    <Briefcase className="w-4 h-4 text-emerald-600" />
+                    <button type="button" onClick={() => void handleShareProviderProfile()} title="Compartir perfil" aria-label="Compartir perfil" className="shrink-0 inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 px-2 py-1.5 text-[10px] font-semibold">
+                      <Share2 className="w-3.5 h-3.5" /> Compartir
+                    </button>
                   </div>
+                  {shareMessage && <p role="status" className="mb-3 text-[10px] text-slate-600">{shareMessage}</p>}
                   <div className="flex gap-3 items-center">
                     <img src={localProfilePhoto || currentProvider.foto_perfil} alt="Perfil profesional" className="w-14 h-14 rounded-2xl object-cover shrink-0" />
                     <div className="flex-1 min-w-0">
@@ -1510,50 +1569,8 @@ export function TabPerfil({
           </>
         )}
 
-        <div className="mt-4">
-          <AccessibilityPreferencesPanel />
-        </div>
 
-        <section className="mt-4 bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-start gap-2 min-w-0">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-              <div className="min-w-0">
-                <h3 className="text-xs font-black text-slate-700">Legal y privacidad</h3>
-                <p className="text-[10px] text-slate-400 mt-0.5">Términos, privacidad y normas de Servicios Vecinales.</p>
-              </div>
-            </div>
-            <span className={`shrink-0 text-[9px] font-bold px-2 py-1 rounded-full border ${legalUpToDate ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-amber-50 border-amber-100 text-amber-700'}`}>
-              {legalUpToDate ? 'Al día' : 'Pendiente'}
-            </span>
-          </div>
-          <div className="grid grid-cols-2 gap-1.5 mt-3">
-            <button type="button" onClick={() => openLegalSection(setLegalInitialSection, setLegalOpen, 'terminos')} className="py-2 rounded-xl bg-slate-50 border border-slate-100 text-[10px] font-bold text-slate-600">Términos</button>
-            <button type="button" onClick={() => openLegalSection(setLegalInitialSection, setLegalOpen, 'privacidad')} className="py-2 rounded-xl bg-slate-50 border border-slate-100 text-[10px] font-bold text-slate-600">Política de privacidad</button>
-            <button type="button" onClick={() => openLegalSection(setLegalInitialSection, setLegalOpen, 'normas')} className="py-2 rounded-xl bg-slate-50 border border-slate-100 text-[10px] font-bold text-slate-600">Normas</button>
-            {currentUser.tipo_usuario !== 'admin' && <button type="button" onClick={() => setPrivacyCenterOpen(true)} className="py-2 rounded-xl bg-emerald-50 border border-emerald-100 text-[10px] font-bold text-emerald-700">Mis datos y derechos</button>}
-          </div>
-          {!legalUpToDate && (
-            <div className="mt-3">
-              {!currentUser.mayor_18_declarado && (
-                <label className="flex items-start gap-2 rounded-xl bg-amber-50 border border-amber-100 p-2.5 mb-2 cursor-pointer">
-                  <input type="checkbox" checked={existingAdultDeclared} onChange={(event) => setExistingAdultDeclared(event.target.checked)} className="mt-0.5 accent-emerald-600" />
-                  <span className="text-[10px] text-amber-800 leading-relaxed">Declaro tener 18 años o más.</span>
-                </label>
-              )}
-              <button
-                type="button"
-                onClick={() => void handleAcceptCurrentPolicies()}
-                disabled={policySaving || !existingAdultDeclared}
-                className="w-full py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold disabled:bg-slate-300"
-              >
-                {policySaving ? 'Guardando...' : `Aceptar términos y confirmar lectura · ${LEGAL_POLICIES_VERSION}`}
-              </button>
-            </div>
-          )}
-          {policyMessage && <p className="mt-2 text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl p-2.5">{policyMessage}</p>}
-          {policyError && <p className="mt-2 text-[10px] text-rose-700 bg-rose-50 border border-rose-100 rounded-xl p-2.5">{policyError}</p>}
-        </section>
+
 
         {currentUser.tipo_usuario === 'admin' && (
           <section className="mt-4 bg-slate-900 text-white rounded-2xl p-4"><div className="flex items-start gap-2"><Info className="w-4 h-4 text-emerald-400 shrink-0" /><p className="text-xs text-white/75">Tu cuenta tiene acceso al panel administrativo. Usa la pestaña Admin para verificar proveedores y revisar la actividad general.</p></div></section>

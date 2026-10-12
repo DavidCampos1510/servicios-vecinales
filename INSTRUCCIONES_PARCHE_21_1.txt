@@ -1,0 +1,21 @@
+SERVICIOS VECINALES — PARCHE 21.1 (CORRECCIÓN ANDROID)
+Base: Parche 21 actualizado; conserva cambios de TabPerfil.
+
+ARCHIVOS:
+- src/components/TabInicio.tsx: buscador compacto en pantalla pequeña, chips de localización en una sola fila con desplazamiento horizontal, área de lista separada de navegación inferior para evitar que tape «Ver perfil».
+- src/index.css: estilos responsive y prevención de aumento automático de texto en la vista de búsqueda Android.
+- src/components/TabPerfil.tsx: idéntico al parche 21 actualizado, incluido para facilitar actualización desde la base v7.
+
+INSTALAR:
+1. Guarda copia de seguridad del proyecto.
+2. Copia las carpetas src de este ZIP a la raíz del proyecto, conservando las rutas.
+3. En VS Code, ejecuta: npm install (si hace falta), npm run build y npx cap sync android.
+4. En Android Studio abre/ejecuta en el teléfono. Comprueba tres filtros de ubicación (deslizar lateralmente si la pantalla no permite mostrar los tres), listado de proveedores y botón Ver perfil al bajar el listado.
+
+ALCANCE:
+Sin modificaciones a Firebase, Storage, autenticación, datos o lógica de búsqueda.
+Las fotos de perfil continúan siendo locales.
+Compartir URL pública de proveedor continúa pendiente.
+
+VALIDACIÓN:
+Se verificaron los cambios por inspección de código. La ejecución de npm run build no pudo completarse en este entorno porque no está instalado el ejecutable vite en node_modules; prueba la compilación en tu máquina.

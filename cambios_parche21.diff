@@ -1,0 +1,105 @@
+--- a/src/components/TabPerfil.tsx
++++ b/src/components/TabPerfil.tsx
+@@ -20,6 +20,7 @@
+   Phone,
+   Plus,
+   Save,
++  Share2,
+   ShieldCheck,
+   Sparkles,
+   Star,
+@@ -54,7 +55,6 @@
+ import { GeoLocationFields } from './GeoLocationFields';
+ import { LegalCenter } from './LegalCenter';
+ import { PrivacyRightsCenter } from './PrivacyRightsCenter';
+-import { AccessibilityPreferencesPanel } from './AccessibilityPreferencesPanel';
+ import { auth, getFriendlyFirebaseError } from '../firebase';
+ import { LEGAL_POLICIES_VERSION, type LegalSectionId } from '../legalPolicies';
+ import { formatDate, isRealFirebaseConfigured, SVDatabaseService } from '../state/databaseService';
+@@ -173,6 +173,44 @@
+   const [providerSaving, setProviderSaving] = useState(false);
+   const [providerError, setProviderError] = useState('');
+   const [providerMessage, setProviderMessage] = useState('');
++  const [shareMessage, setShareMessage] = useState('');
++
++  const handleShareProviderProfile = async () => {
++    if (!currentProvider) return;
++    setShareMessage('');
++    // Only share a deep link if a real public website URL has been configured.
++    // Capacitor's localhost origin is NOT a link that another person can open.
++    const configuredBase = import.meta.env.VITE_PUBLIC_APP_URL?.trim();
++    let profileUrl = '';
++    if (configuredBase) {
++      try {
++        const url = new URL(configuredBase);
++        if (url.protocol === 'https:' && url.hostname !== 'localhost' && url.hostname !== '127.0.0.1') {
++          url.searchParams.set('provider', currentProvider.id);
++          profileUrl = url.toString();
++        }
++      } catch { /* Invalid configuration: share text without a broken link. */ }
++    }
++    const message = [
++      'Te comparto mi perfil profesional en Servicios Vecinales:',
++      currentProvider.nombre_publico || currentUser?.nombre || currentProvider.oficio,
++      `Especialidad: ${currentProvider.oficio}`,
++      currentProvider.ubicacion ? `Ubicación: ${currentProvider.ubicacion}` : '',
++      profileUrl,
++    ].filter(Boolean).join('\n');
++    try {
++      if (navigator.share) {
++        await navigator.share({ title: 'Perfil profesional - Servicios Vecinales', text: message });
++        setShareMessage(profileUrl ? 'Perfil compartido.' : 'Información compartida. Falta configurar la dirección web pública para incluir un enlace al perfil.');
++      } else {
++        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
++        setShareMessage(profileUrl ? 'Se abrió WhatsApp para compartir el perfil.' : 'Se abrió WhatsApp con los datos del proveedor. Falta configurar la dirección web pública para incluir un enlace.');
++      }
++    } catch (error) {
++      if (error instanceof Error && error.name === 'AbortError') return;
++      setShareMessage('No se pudo abrir el menú para compartir. Inténtalo nuevamente.');
++    }
++  };
+ 
+   const [availabilityStatus, setAvailabilityStatus] = useState<DisponibilidadProveedor>('con_agenda');
+   const [availabilityHours, setAvailabilityHours] = useState('');
+@@ -1107,9 +1145,6 @@
+             {!hasRealFirebase && <div className="mt-5 text-left bg-amber-50 border border-amber-100 rounded-xl p-3"><p className="text-[10px] text-amber-800"><b>Modo demo:</b> usa jane.doe@example.com, carlos.gomez@example.com o admin@example.com. La contraseña puede ser cualquier texto de 6 caracteres.</p></div>}
+           </div>
+         </motion.div>
+-        <div className="px-4 pb-4">
+-          <AccessibilityPreferencesPanel compact />
+-        </div>
+         {legalOpen && <LegalCenter countryCode={countryCode} initialSection={legalInitialSection} onClose={() => setLegalOpen(false)} />}
+       </div>
+     );
+@@ -1129,8 +1164,8 @@
+               <h3 className="text-xs font-black text-slate-700 uppercase tracking-wide">Datos de la cuenta</h3>
+               <p className="text-[10px] text-slate-400 mt-0.5">Identidad, contacto y ubicación principal.</p>
+             </div>
+-            <button type="button" onClick={() => setEditingPersonal((editing) => !editing)} className="px-2.5 py-1.5 rounded-xl bg-slate-100 text-slate-600 text-[10px] font-bold flex items-center gap-1">
+-              <Pencil className="w-3.5 h-3.5" /> {editingPersonal ? 'Cerrar' : 'Editar datos'}
++            <button type="button" onClick={() => setEditingPersonal((editing) => !editing)} className="shrink-0 px-2 py-1 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-bold inline-flex items-center gap-1 whitespace-nowrap">
++              <Pencil className="w-3.5 h-3.5" /> {editingPersonal ? 'Cerrar' : 'Editar'}
+             </button>
+           </div>
+           <div className="flex items-center gap-3">
+@@ -1328,6 +1363,10 @@
+                     </div>
+                     <Briefcase className="w-4 h-4 text-emerald-600" />
+                   </div>
++                  <button type="button" onClick={() => void handleShareProviderProfile()} className="mb-3 inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-2 text-[11px] font-bold">
++                    <Share2 className="w-4 h-4" /> Compartir perfil
++                  </button>
++                  {shareMessage && <p role="status" className="mb-3 text-[10px] text-slate-600">{shareMessage}</p>}
+                   <div className="flex gap-3 items-center">
+                     <img src={localProfilePhoto || currentProvider.foto_perfil} alt="Perfil profesional" className="w-14 h-14 rounded-2xl object-cover shrink-0" />
+                     <div className="flex-1 min-w-0">
+@@ -1510,9 +1549,6 @@
+           </>
+         )}
+ 
+-        <div className="mt-4">
+-          <AccessibilityPreferencesPanel />
+-        </div>
+ 
+         <section className="mt-4 bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+           <div className="flex items-start justify-between gap-3">

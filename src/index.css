@@ -405,3 +405,77 @@ select:focus {
     animation-iteration-count: 1 !important;
   }
 }
+
+/* Parche 21.1: Android - buscador compacto y navegación sin solapamiento. */
+.native-app-shell .sv-search-screen {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+.sv-search-screen .sv-location-shortcuts {
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+.sv-search-screen .sv-location-shortcuts > button {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+@media (max-width: 420px) {
+  .sv-search-screen .sv-search-filters { gap: 4px; padding: 8px; }
+  .sv-search-screen .sv-search-filters input,
+  .sv-search-screen .sv-search-filters select { min-height: 32px; font-size: 12px; }
+  .sv-search-screen .sv-location-shortcuts > button { font-size: 10px; line-height: 16px; padding: 5px 7px; }
+}
+
+/* Parche 21.5: Android usa un layout de columnas real, sin superponer
+   la navegación sobre los botones del sistema. El ajuste físico de
+   barras de Android se aplica en MainActivity.java. */
+.native-app-shell {
+  padding: 0 !important;
+  height: 100dvh;
+  min-height: 0;
+}
+.native-app-shell > .sv-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+.native-app-shell .sv-main-pane {
+  min-height: 0;
+  flex: 1 1 auto;
+}
+.native-app-shell .sv-bottom-nav {
+  position: relative !important;
+  inset: auto !important;
+  flex: 0 0 66px;
+  height: 66px !important;
+  min-height: 66px !important;
+  padding: 4px 12px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  border-top: 1px solid #e5e7eb !important;
+  z-index: 20;
+}
+.native-app-shell .sv-bottom-nav button {
+  height: 56px;
+  min-height: 0;
+}
+
+/* Parche 21.6 — sólo unificar en blanco el área inferior de Android.
+   No cambiar altura, posición ni el espacio reservado para la barra del sistema. */
+.native-app-shell,
+.native-app-shell > .sv-screen {
+  background-color: #ffffff !important;
+}
+.native-app-shell .sv-bottom-nav {
+  background: #ffffff !important;
+  border-top-color: transparent !important;
+}
+
+/* Parche 21.7 — eliminar SOLO la franja vacía sobre la barra inferior.
+   TabInicio conserva pb-[70px] de cuando la navegación se superponía.
+   En Android la barra ahora participa en el layout flex: ese padding sobra.
+   No modificar posición/altura de la navegación ni áreas de sistema. */
+.native-app-shell .sv-search-screen {
+  padding-bottom: 0 !important;
+}

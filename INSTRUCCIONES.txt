@@ -1,0 +1,17 @@
+PARCHE 21.9 — SERVICIOS VECINALES
+Base: v7 + parche 21.8.
+
+CAMBIOS
+- Seguridad y cuenta ahora disponible para proveedor en el engranaje, igual que cliente.
+- Verificación del correo se consulta dentro de Seguridad y cuenta.
+- Cambiar contraseña en proveedor reutiliza el envío de correo de recuperación de Firebase que usa cliente.
+- Eliminado el recuadro explicativo Foto de perfil de Datos de la cuenta.
+- Se conserva subir foto desde el avatar y quitar foto local mediante un enlace discreto.
+- Retirada la tarjeta de Correo verificado/registrado de Datos de la cuenta; se conserva el teléfono.
+
+INSTALACIÓN
+Reemplazar únicamente src/components/TabPerfil.tsx sobre el proyecto con parche 21.8 instalado.
+Comandos: npm run build ; npx cap sync android ; npx cap open android
+
+No se modifica Firebase, navegación, almacenamiento ni archivos nativos.
+Pendiente comprobar compilación y funcionamiento en dispositivo real.

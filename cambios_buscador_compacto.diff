@@ -1,0 +1,130 @@
+--- a/src/components/TabInicio.tsx
++++ b/src/components/TabInicio.tsx
+@@ -455,19 +455,19 @@
+               </span>
+             </div>
+ 
+-            <div className="bg-white rounded-2xl p-3.5 shadow-sm border border-slate-100 flex flex-col gap-2 mt-2">
++            <div className="bg-white rounded-2xl p-2.5 shadow-sm border border-slate-100 flex flex-col gap-1.5 mt-1.5">
+               <div className="relative">
+-                <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
++                <Search className="absolute left-3 top-2 w-4 h-4 text-slate-400" />
+                 <input
+                   type="search"
+                   placeholder="Ej. cerrajero, pintor..."
+-                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none"
++                  className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                   value={searchTrade}
+                   onChange={(event) => setSearchTrade(event.target.value)}
+                   maxLength={80}
+                 />
+               </div>
+-              <div className="grid grid-cols-2 gap-2">
++              <div className="grid grid-cols-2 gap-1.5">
+                 <select
+                   value={searchCountryCode}
+                   onChange={(event) => {
+@@ -475,7 +475,7 @@
+                     setSearchRegionCode('');
+                     setSearchLocality('');
+                   }}
+-                  className="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[11px] focus:ring-1 focus:ring-emerald-500 focus:outline-none"
++                  className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-[11px] focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                 >
+                   <option value="">Todos los países</option>
+                   {SUPPORTED_COUNTRIES.map((country) => <option key={country.code} value={country.code}>{country.flag} {country.name}</option>)}
+@@ -484,14 +484,14 @@
+                   value={searchRegionCode}
+                   disabled={!searchCountryCode}
+                   onChange={(event) => { setSearchRegionCode(event.target.value); setSearchLocality(''); }}
+-                  className="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[11px] focus:ring-1 focus:ring-emerald-500 focus:outline-none disabled:text-slate-300"
++                  className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-[11px] focus:ring-1 focus:ring-emerald-500 focus:outline-none disabled:text-slate-300"
+                 >
+                   <option value="">{searchCountry ? `Toda ${searchCountry.regionLabel.toLowerCase()}` : 'Región / estado'}</option>
+                   {searchCountry?.regions.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}
+                 </select>
+               </div>
+               <div className="relative">
+-                <MapPin className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
++                <MapPin className="absolute left-3 top-2 w-4 h-4 text-slate-400" />
+                 <input
+                   type="search"
+                   list={searchCountryCode === 'CL' && searchRegionCode ? 'sv-search-chile-localities' : undefined}
+@@ -500,14 +500,14 @@
+                   disabled={!searchCountryCode}
+                   placeholder={searchCountry ? `${searchCountry.localityLabel} (opcional)` : 'Primero selecciona un país'}
+                   maxLength={100}
+-                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none disabled:text-slate-300"
++                  className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none disabled:text-slate-300"
+                 />
+                 {searchCountryCode === 'CL' && searchRegionCode && (
+                   <datalist id="sv-search-chile-localities">{searchLocalitySuggestions.map((item) => <option key={item} value={item} />)}</datalist>
+                 )}
+               </div>
+               {currentUser?.pais_codigo && (
+-                <div className="flex flex-wrap gap-1.5">
++                <div className="flex flex-wrap gap-1">
+                   <button
+                     type="button"
+                     onClick={() => {
+@@ -515,7 +515,7 @@
+                       setSearchRegionCode(currentUser.region_codigo || '');
+                       setSearchLocality(currentUser.localidad_nombre || '');
+                     }}
+-                    className="px-2.5 py-1.5 rounded-full bg-emerald-600 text-white text-[9px] font-bold"
++                    className="px-2.5 py-1 rounded-full bg-emerald-600 text-white text-[9px] font-bold"
+                   >
+                     Mi {getCountryConfig(currentUser.pais_codigo).localityLabel.toLowerCase()}
+                   </button>
+@@ -526,7 +526,7 @@
+                       setSearchRegionCode(currentUser.region_codigo || '');
+                       setSearchLocality('');
+                     }}
+-                    className="px-2.5 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 text-[9px] font-bold"
++                    className="px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-600 text-[9px] font-bold"
+                   >
+                     Toda mi {getCountryConfig(currentUser.pais_codigo).regionLabel.toLowerCase()}
+                   </button>
+@@ -537,18 +537,18 @@
+                       setSearchRegionCode('');
+                       setSearchLocality('');
+                     }}
+-                    className="px-2.5 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 text-[9px] font-bold"
++                    className="px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-600 text-[9px] font-bold"
+                   >
+                     Todo {getCountryConfig(currentUser.pais_codigo).name}
+                   </button>
+                 </div>
+               )}
+               <div className="relative">
+-                <Clock className="absolute left-3 top-2.5 w-4 h-4 text-slate-400 pointer-events-none" />
++                <Clock className="absolute left-3 top-2 w-4 h-4 text-slate-400 pointer-events-none" />
+                 <select
+                   value={availabilityFilter}
+                   onChange={(event) => setAvailabilityFilter(event.target.value as DisponibilidadProveedor | 'todos')}
+-                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none appearance-none"
++                  className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none appearance-none"
+                 >
+                   <option value="todos">Cualquier disponibilidad</option>
+                   {PROVIDER_AVAILABILITY_OPTIONS.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
+@@ -556,16 +556,16 @@
+               </div>
+             </div>
+ 
+-            <div className="my-4">
+-              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
++            <div className="my-2.5">
++              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                 Categorías rápidas
+               </h3>
+-              <div className="flex gap-2.5 overflow-x-auto pb-1.5 scrollbar-none snap-x select-none">
++              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none snap-x select-none">
+                 {PROVIDER_CATEGORIES.map((category) => (
+                   <button
+                     key={category.id}
+                     onClick={() => setSelectedCategory(category.id)}
+-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border whitespace-nowrap cursor-pointer ${
++                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border whitespace-nowrap cursor-pointer ${
+                       selectedCategory === category.id
+                         ? 'bg-emerald-600 text-white border-transparent shadow-sm'
+                         : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'

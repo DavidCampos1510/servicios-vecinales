@@ -635,12 +635,12 @@ export function TabSolicitudes({
 
   if (!currentUser) {
     return (
-      <div className="h-full flex flex-col sv-screen">
-        <header className="h-14 bg-emerald-600 flex items-center px-4 text-white font-bold shadow-md sv-header">
+      <div className="h-full flex flex-col bg-slate-50">
+        <header className="h-14 bg-emerald-600 flex items-center px-4 text-white font-bold shadow-md">
           Solicitudes
         </header>
         <div className="flex-1 flex items-center justify-center p-6 pb-20">
-          <div className="bg-white border border-slate-100 rounded-3xl p-6 text-center shadow-sm sv-card">
+          <div className="bg-white border border-slate-100 rounded-3xl p-6 text-center shadow-sm">
             <Wrench className="w-10 h-10 text-slate-300 mx-auto mb-3" />
             <p className="text-sm font-bold text-slate-700">Inicia sesión para ver tus solicitudes</p>
             <p className="text-xs text-slate-400 mt-1">Los clientes solicitan trabajos y los proveedores administran el avance.</p>
@@ -676,8 +676,8 @@ export function TabSolicitudes({
 
     if (chatOpen && currentUser.tipo_usuario !== 'admin') {
       return (
-        <div className="h-full flex flex-col sv-screen">
-          <header className="h-14 bg-emerald-600 flex items-center gap-3 px-3 text-white shadow-md shrink-0 sv-header">
+        <div className="h-full flex flex-col bg-slate-50">
+          <header className="h-14 bg-emerald-600 flex items-center gap-3 px-3 text-white shadow-md shrink-0">
             <button
               type="button"
               onClick={closeChat}
@@ -730,7 +730,7 @@ export function TabSolicitudes({
                       <div
                         className={`max-w-[82%] rounded-2xl px-3 py-2 shadow-sm ${
                           ownMessage
-                            ? 'bg-emerald-600 text-white rounded-br-md shadow-[0_5px_14px_rgba(16,150,88,.16)]'
+                            ? 'bg-emerald-600 text-white rounded-br-md'
                             : 'bg-white border border-slate-100 text-slate-700 rounded-bl-md'
                         }`}
                       >
@@ -778,7 +778,7 @@ export function TabSolicitudes({
                     onClick={() => void sendChatMessage(selectedRequest)}
                     disabled={chatSending || chatText.trim().length === 0}
                     aria-label="Enviar mensaje"
-                    className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 disabled:bg-slate-300 sv-primary"
+                    className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 disabled:bg-slate-300"
                   >
                     <Send className="w-4 h-4" />
                   </button>
@@ -795,8 +795,8 @@ export function TabSolicitudes({
     }
 
     return (
-      <div className="h-full flex flex-col sv-screen">
-        <header className="h-14 bg-emerald-600 flex items-center gap-3 px-3 text-white shadow-md shrink-0 sv-header">
+      <div className="h-full flex flex-col bg-slate-50">
+        <header className="h-14 bg-emerald-600 flex items-center gap-3 px-3 text-white shadow-md shrink-0">
           <button
             type="button"
             onClick={closeDetail}
@@ -819,7 +819,7 @@ export function TabSolicitudes({
             <div className="text-[11px] text-rose-700 bg-rose-50 border border-rose-200 p-3 rounded-xl">{error}</div>
           )}
 
-          <section className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm sv-card">
+          <section className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
             <div className="flex items-center gap-3">
               {currentUser.tipo_usuario === 'proveedor' ? (
                 <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center shrink-0">
@@ -850,7 +850,7 @@ export function TabSolicitudes({
             </div>
           </section>
 
-          <section className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm sv-card">
+          <section className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-[10px] uppercase tracking-wide font-bold text-slate-400">Estado actual</p>
@@ -872,7 +872,7 @@ export function TabSolicitudes({
             </div>
           </section>
 
-          <section className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm sv-card">
+          <section className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
             <h3 className="text-xs font-bold text-slate-800">Información del trabajo</h3>
             <p className="text-xs text-slate-600 mt-3 leading-relaxed whitespace-pre-wrap">{selectedRequest.descripcion}</p>
             <div className="mt-4 space-y-2 text-[11px] text-slate-600">
@@ -915,7 +915,7 @@ export function TabSolicitudes({
           </section>
 
           {currentUser.tipo_usuario === 'proveedor' && (
-            <section className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm sv-card">
+            <section className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
                   <Flag className="w-5 h-5 text-rose-600" />
@@ -941,7 +941,7 @@ export function TabSolicitudes({
           )}
 
           {currentUser.tipo_usuario !== 'admin' && (quote || selectedRequest.estado === 'aceptada') && (
-            <section className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm sv-card">
+            <section className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
                   <DollarSign className="w-5 h-5 text-emerald-600" />
@@ -1225,7 +1225,7 @@ export function TabSolicitudes({
           )}
 
           {currentUser.tipo_usuario !== 'admin' && (
-            <section className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm sv-card">
+            <section className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
                   <MessageCircle className="w-5 h-5 text-emerald-600" />
@@ -1250,7 +1250,7 @@ export function TabSolicitudes({
             </section>
           )}
 
-          <section className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm sv-card">
+          <section className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
             <div className="flex items-center justify-between gap-2">
               <div>
                 <h3 className="text-xs font-bold text-slate-800">Historial del trabajo</h3>
@@ -1306,7 +1306,7 @@ export function TabSolicitudes({
           )}
 
           {actions.length > 0 && (
-            <section className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm sv-card">
+            <section className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
               <h3 className="text-xs font-bold text-slate-800 mb-3">Acciones disponibles</h3>
               <div className="grid grid-cols-2 gap-2">
                 {actions.map((action) => (
@@ -1329,7 +1329,7 @@ export function TabSolicitudes({
           )}
 
           {currentUser.tipo_usuario === 'cliente' && selectedRequest.estado === 'completada' && (
-            <section className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm sv-card">
+            <section className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
               {alreadyReviewed ? (
                 <div className="flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-100 px-3 py-2.5 text-emerald-700">
                   <CheckCircle2 className="w-4 h-4 shrink-0" />
@@ -1453,8 +1453,8 @@ export function TabSolicitudes({
   ];
 
   return (
-    <div className="h-full flex flex-col sv-screen">
-      <header className="h-14 bg-emerald-600 flex items-center justify-between px-4 text-white shadow-md shrink-0 sv-header">
+    <div className="h-full flex flex-col bg-slate-50">
+      <header className="h-14 bg-emerald-600 flex items-center justify-between px-4 text-white shadow-md shrink-0">
         <div>
           <h2 className="font-bold text-sm">Solicitudes de servicio</h2>
           <p className="text-[10px] text-white/80">
@@ -1468,7 +1468,7 @@ export function TabSolicitudes({
 
       <main className="flex-1 overflow-y-auto pb-20">
         <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur px-4 pt-3 pb-2 border-b border-slate-100">
-          <div className="grid grid-cols-3 gap-1.5 bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm sv-tabs">
+          <div className="grid grid-cols-3 gap-1.5 bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm">
             {views.map((item) => {
               const Icon = item.icon;
               const active = view === item.id;
@@ -1478,7 +1478,7 @@ export function TabSolicitudes({
                   key={item.id}
                   onClick={() => changeView(item.id)}
                   className={`min-w-0 rounded-xl px-1.5 py-2 flex flex-col items-center justify-center gap-1 transition-colors ${
-                    active ? 'sv-chip-active' : 'text-slate-500 hover:bg-slate-50'
+                    active ? 'bg-emerald-600 text-white' : 'text-slate-500 hover:bg-slate-50'
                   }`}
                 >
                   <div className="flex items-center gap-1">
@@ -1522,7 +1522,7 @@ export function TabSolicitudes({
           {loading ? (
             <div className="py-20 text-center text-xs text-slate-400">Cargando solicitudes...</div>
           ) : error && requests.length === 0 ? null : visibleRequests.length === 0 ? (
-            <div className="bg-white border border-dashed border-slate-200 rounded-3xl p-7 text-center mt-1 sv-empty-state">
+            <div className="bg-white border border-dashed border-slate-200 rounded-3xl p-7 text-center mt-1">
               {view === 'activas' ? (
                 <Wrench className="w-10 h-10 text-slate-300 mx-auto mb-3" />
               ) : view === 'completadas' ? (
@@ -1555,7 +1555,7 @@ export function TabSolicitudes({
                     onKeyDown={(event) => {
                       if (event.key === 'Enter' || event.key === ' ') openDetail(request);
                     }}
-                    className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm cursor-pointer active:scale-[0.995] transition-transform sv-provider-card"
+                    className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm cursor-pointer active:scale-[0.995] transition-transform"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
@@ -1599,8 +1599,8 @@ export function TabSolicitudes({
                             onClick={() => void changeStatus(request, action)}
                             className={`py-2 rounded-xl text-xs font-bold disabled:opacity-50 ${
                               action === 'aceptada' || action === 'en_proceso' || action === 'completada'
-                                ? 'bg-emerald-600 text-white sv-primary'
-                                : 'bg-slate-100 text-slate-700 border border-slate-200 sv-secondary'
+                                ? 'bg-emerald-600 text-white'
+                                : 'bg-slate-100 text-slate-700 border border-slate-200'
                             }`}
                           >
                             {updatingId === request.id ? 'Guardando...' : REQUEST_STATUS_LABELS[action]}

@@ -1,3 +1,4 @@
+import { shareProviderProfile } from '../shareProviderProfile';
 import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import {
@@ -15,6 +16,7 @@ import {
   MessageSquare,
   Phone,
   Search,
+  Share2,
   Sparkles,
   Star,
   Wrench,
@@ -102,6 +104,7 @@ export function TabInicio({ currentUser, onRefreshTrigger, onProviderDetailChang
   const [searchLocality, setSearchLocality] = useState(currentUser?.localidad_nombre || '');
 
   const [selectedProvider, setSelectedProvider] = useState<Proveedor | null>(null);
+  const [publicShareMessage, setPublicShareMessage] = useState('');
   const [providerReviews, setProviderReviews] = useState<Resena[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
   const [requestFormOpen, setRequestFormOpen] = useState(false);
@@ -436,7 +439,7 @@ export function TabInicio({ currentUser, onRefreshTrigger, onProviderDetailChang
     );
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 relative">
+    <div className={`sv-search-screen flex flex-col h-full min-h-0 bg-slate-50 relative ${selectedProvider ? '' : 'pb-[70px]'}`}>
       <AnimatePresence mode="wait">
         {!selectedProvider ? (
           <motion.div
@@ -444,7 +447,7 @@ export function TabInicio({ currentUser, onRefreshTrigger, onProviderDetailChang
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="flex-1 flex flex-col overflow-y-auto px-4 pt-16 pb-20 scrollbar-thin"
+            className="flex-1 min-h-0 flex flex-col overflow-y-auto px-3 pt-16 pb-5 scrollbar-thin"
           >
             <div className="absolute top-0 left-0 right-0 h-14 bg-emerald-600 flex items-center px-4 justify-between shadow-md z-50">
               <span className="font-bold text-white text-base tracking-tight flex items-center gap-1.5">
@@ -455,19 +458,19 @@ export function TabInicio({ currentUser, onRefreshTrigger, onProviderDetailChang
               </span>
             </div>
 
-            <div className="bg-white rounded-2xl p-3.5 shadow-sm border border-slate-100 flex flex-col gap-2 mt-2">
+            <div className="sv-search-filters bg-white rounded-2xl p-2 shadow-sm border border-slate-100 flex flex-col gap-1 mt-1">
               <div className="relative">
-                <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                <Search className="absolute left-3 top-2 w-4 h-4 text-slate-400" />
                 <input
                   type="search"
                   placeholder="Ej. cerrajero, pintor..."
-                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none"
                   value={searchTrade}
                   onChange={(event) => setSearchTrade(event.target.value)}
                   maxLength={80}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-1.5">
                 <select
                   value={searchCountryCode}
                   onChange={(event) => {
@@ -475,7 +478,7 @@ export function TabInicio({ currentUser, onRefreshTrigger, onProviderDetailChang
                     setSearchRegionCode('');
                     setSearchLocality('');
                   }}
-                  className="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[11px] focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-[11px] focus:ring-1 focus:ring-emerald-500 focus:outline-none"
                 >
                   <option value="">Todos los países</option>
                   {SUPPORTED_COUNTRIES.map((country) => <option key={country.code} value={country.code}>{country.flag} {country.name}</option>)}
@@ -484,14 +487,14 @@ export function TabInicio({ currentUser, onRefreshTrigger, onProviderDetailChang
                   value={searchRegionCode}
                   disabled={!searchCountryCode}
                   onChange={(event) => { setSearchRegionCode(event.target.value); setSearchLocality(''); }}
-                  className="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[11px] focus:ring-1 focus:ring-emerald-500 focus:outline-none disabled:text-slate-300"
+                  className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-[11px] focus:ring-1 focus:ring-emerald-500 focus:outline-none disabled:text-slate-300"
                 >
                   <option value="">{searchCountry ? `Toda ${searchCountry.regionLabel.toLowerCase()}` : 'Región / estado'}</option>
                   {searchCountry?.regions.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}
                 </select>
               </div>
               <div className="relative">
-                <MapPin className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                <MapPin className="absolute left-3 top-2 w-4 h-4 text-slate-400" />
                 <input
                   type="search"
                   list={searchCountryCode === 'CL' && searchRegionCode ? 'sv-search-chile-localities' : undefined}
@@ -500,14 +503,14 @@ export function TabInicio({ currentUser, onRefreshTrigger, onProviderDetailChang
                   disabled={!searchCountryCode}
                   placeholder={searchCountry ? `${searchCountry.localityLabel} (opcional)` : 'Primero selecciona un país'}
                   maxLength={100}
-                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none disabled:text-slate-300"
+                  className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none disabled:text-slate-300"
                 />
                 {searchCountryCode === 'CL' && searchRegionCode && (
                   <datalist id="sv-search-chile-localities">{searchLocalitySuggestions.map((item) => <option key={item} value={item} />)}</datalist>
                 )}
               </div>
               {currentUser?.pais_codigo && (
-                <div className="flex flex-wrap gap-1.5">
+                <div className="sv-location-shortcuts flex flex-nowrap gap-1 overflow-x-auto scrollbar-none">
                   <button
                     type="button"
                     onClick={() => {
@@ -515,7 +518,7 @@ export function TabInicio({ currentUser, onRefreshTrigger, onProviderDetailChang
                       setSearchRegionCode(currentUser.region_codigo || '');
                       setSearchLocality(currentUser.localidad_nombre || '');
                     }}
-                    className="px-2.5 py-1.5 rounded-full bg-emerald-600 text-white text-[9px] font-bold"
+                    className="shrink-0 whitespace-nowrap px-2 py-1 rounded-full bg-emerald-600 text-white text-[9px] font-bold"
                   >
                     Mi {getCountryConfig(currentUser.pais_codigo).localityLabel.toLowerCase()}
                   </button>
@@ -526,7 +529,7 @@ export function TabInicio({ currentUser, onRefreshTrigger, onProviderDetailChang
                       setSearchRegionCode(currentUser.region_codigo || '');
                       setSearchLocality('');
                     }}
-                    className="px-2.5 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 text-[9px] font-bold"
+                    className="shrink-0 whitespace-nowrap px-2 py-1 rounded-full bg-white border border-slate-200 text-slate-600 text-[9px] font-bold"
                   >
                     Toda mi {getCountryConfig(currentUser.pais_codigo).regionLabel.toLowerCase()}
                   </button>
@@ -537,18 +540,18 @@ export function TabInicio({ currentUser, onRefreshTrigger, onProviderDetailChang
                       setSearchRegionCode('');
                       setSearchLocality('');
                     }}
-                    className="px-2.5 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 text-[9px] font-bold"
+                    className="shrink-0 whitespace-nowrap px-2 py-1 rounded-full bg-white border border-slate-200 text-slate-600 text-[9px] font-bold"
                   >
                     Todo {getCountryConfig(currentUser.pais_codigo).name}
                   </button>
                 </div>
               )}
               <div className="relative">
-                <Clock className="absolute left-3 top-2.5 w-4 h-4 text-slate-400 pointer-events-none" />
+                <Clock className="absolute left-3 top-2 w-4 h-4 text-slate-400 pointer-events-none" />
                 <select
                   value={availabilityFilter}
                   onChange={(event) => setAvailabilityFilter(event.target.value as DisponibilidadProveedor | 'todos')}
-                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none appearance-none"
+                  className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none appearance-none"
                 >
                   <option value="todos">Cualquier disponibilidad</option>
                   {PROVIDER_AVAILABILITY_OPTIONS.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
@@ -556,16 +559,16 @@ export function TabInicio({ currentUser, onRefreshTrigger, onProviderDetailChang
               </div>
             </div>
 
-            <div className="my-4">
-              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+            <div className="my-2">
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                 Categorías rápidas
               </h3>
-              <div className="flex gap-2.5 overflow-x-auto pb-1.5 scrollbar-none snap-x select-none">
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none snap-x select-none">
                 {PROVIDER_CATEGORIES.map((category) => (
                   <button
                     key={category.id}
                     onClick={() => setSelectedCategory(category.id)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border whitespace-nowrap cursor-pointer ${
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border whitespace-nowrap cursor-pointer ${
                       selectedCategory === category.id
                         ? 'bg-emerald-600 text-white border-transparent shadow-sm'
                         : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
@@ -832,6 +835,14 @@ export function TabInicio({ currentUser, onRefreshTrigger, onProviderDetailChang
                   <p className="text-[10px] text-slate-400 text-center">Inicia sesión como cliente para contactar al proveedor.</p>
                 </div>
               ) : null}
+              <button
+                type="button"
+                onClick={() => { setPublicShareMessage(''); void shareProviderProfile(selectedProvider).then(setPublicShareMessage); }}
+                className="w-full mt-2 py-2 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs font-semibold flex items-center justify-center gap-2"
+              >
+                <Share2 className="w-4 h-4" /> Compartir perfil
+              </button>
+              {publicShareMessage && <p role="status" className="text-[10px] text-slate-500 text-center">{publicShareMessage}</p>}
 
             </section>
 
